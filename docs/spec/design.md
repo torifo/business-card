@@ -287,7 +287,7 @@ interface RepoOverride {
 │   │   │  Akito Shoji │   │   │
 │   │   │  GENIEE      │   │   │
 │   │   │  tagline     │   │   │
-│   │   │  🐙 𝕏 ✉️    │   │   │
+│   │   │ GH  X  Mail  │   │   │
 │   │   └─────────────┘   │   │
 │   │                     │   │
 │   └─────────────────────┘   │

@@ -4,7 +4,7 @@
 
 ## Status
 
-🚧 設計フェーズ完了、実装着手前
+設計フェーズ完了、実装着手前
 
 ## SDD Specification
 
