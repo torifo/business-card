@@ -1,4 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
+import { mkdtemp, writeFile, readFile, utimes, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fetchRepos, parseNextLink, type GitHubRepo } from "./fetchRepos";
 
 function mkRepo(full_name: string, extra: Partial<GitHubRepo> = {}): GitHubRepo {
@@ -109,5 +112,69 @@ describe("fetchRepos", () => {
     await expect(fetchRepos({ username: "torifo", fetchImpl })).rejects.toThrow(
       /403/,
     );
+  });
+});
+
+describe("fetchRepos cache", () => {
+  it("returns cached data without calling fetch when the cache file is fresh", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "fetchrepos-cache-"));
+    const cacheFile = join(dir, "repos.json");
+    const cached = [mkRepo("torifo/cached")];
+    await writeFile(cacheFile, JSON.stringify(cached), "utf8");
+
+    const fetchImpl = vi.fn();
+    const result = await fetchRepos({
+      username: "torifo",
+      fetchImpl,
+      cacheFile,
+      cacheTtlMs: 60_000,
+    });
+
+    expect(result).toEqual(cached);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    await rm(dir, { recursive: true });
+  });
+
+  it("ignores the cache and fetches fresh when the file is older than the TTL", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "fetchrepos-cache-"));
+    const cacheFile = join(dir, "repos.json");
+    const stale = [mkRepo("torifo/stale")];
+    await writeFile(cacheFile, JSON.stringify(stale), "utf8");
+    // age the file by 2 days
+    const old = new Date(Date.now() - 2 * 86_400_000);
+    await utimes(cacheFile, old, old);
+
+    const fresh = [mkRepo("torifo/fresh")];
+    const fetchImpl = vi.fn().mockResolvedValueOnce(mkResponse(fresh));
+
+    const result = await fetchRepos({
+      username: "torifo",
+      fetchImpl,
+      cacheFile,
+      cacheTtlMs: 60 * 60 * 1000, // 1 hour TTL
+    });
+
+    expect(result).toEqual(fresh);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    await rm(dir, { recursive: true });
+  });
+
+  it("writes the cache file after a successful fetch", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "fetchrepos-cache-"));
+    const cacheFile = join(dir, "nested", "repos.json");
+
+    const fresh = [mkRepo("torifo/written")];
+    const fetchImpl = vi.fn().mockResolvedValueOnce(mkResponse(fresh));
+
+    await fetchRepos({
+      username: "torifo",
+      fetchImpl,
+      cacheFile,
+      cacheTtlMs: 60_000,
+    });
+
+    const written = JSON.parse(await readFile(cacheFile, "utf8"));
+    expect(written).toEqual(fresh);
+    await rm(dir, { recursive: true });
   });
 });

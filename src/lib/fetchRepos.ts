@@ -2,6 +2,8 @@
  * GitHub API から公開リポジトリをページネーション込みで取得する。
  * ビルド時にのみ呼び出され、ランタイムでは実行されない (FR-007 / NFR Offline)。
  */
+import { readFile, writeFile, mkdir, stat } from "node:fs/promises";
+import { dirname } from "node:path";
 
 /**
  * GitHub API のリポジトリレスポンスから、本システムで使う最小フィールド集合。
@@ -31,14 +33,27 @@ export interface FetchReposOptions {
   maxPages?: number;
   /** テスト用に fetch を差し替えるためのフック。default は global fetch。 */
   fetchImpl?: typeof fetch;
+  /**
+   * dev 用ローカルファイルキャッシュのパス。指定ありかつ cacheTtlMs 内であれば
+   * ネットワーク呼び出しをスキップする。fetch 成功時には新しい結果で上書きする。
+   * 本番ビルドでは指定しない (常に最新を取得)。
+   */
+  cacheFile?: string;
+  /** キャッシュ TTL (ms)。cacheFile と併用する。 */
+  cacheTtlMs?: number;
 }
 
 const DEFAULT_MAX_PAGES = 5;
 const PER_PAGE = 100;
 
 export async function fetchRepos(options: FetchReposOptions): Promise<GitHubRepo[]> {
-  const { username, token, maxPages = DEFAULT_MAX_PAGES } = options;
+  const { username, token, maxPages = DEFAULT_MAX_PAGES, cacheFile, cacheTtlMs } = options;
   const fetchImpl = options.fetchImpl ?? fetch;
+
+  if (cacheFile && cacheTtlMs) {
+    const cached = await readCacheIfFresh(cacheFile, cacheTtlMs);
+    if (cached) return cached;
+  }
 
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
@@ -68,7 +83,34 @@ export async function fetchRepos(options: FetchReposOptions): Promise<GitHubRepo
     page += 1;
   }
 
+  if (cacheFile) {
+    await writeCache(cacheFile, repos);
+  }
+
   return repos;
+}
+
+async function readCacheIfFresh(
+  file: string,
+  ttlMs: number,
+): Promise<GitHubRepo[] | null> {
+  try {
+    const st = await stat(file);
+    if (Date.now() - st.mtimeMs > ttlMs) return null;
+    const content = await readFile(file, "utf8");
+    return JSON.parse(content) as GitHubRepo[];
+  } catch {
+    return null;
+  }
+}
+
+async function writeCache(file: string, data: GitHubRepo[]): Promise<void> {
+  try {
+    await mkdir(dirname(file), { recursive: true });
+    await writeFile(file, JSON.stringify(data), "utf8");
+  } catch {
+    /* 書き込み失敗は無視。次回の fetch でリトライされる */
+  }
 }
 
 /**
