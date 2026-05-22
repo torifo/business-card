@@ -17,6 +17,14 @@ const { title, description = "デジタル名刺" } = Astro.props;
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script>
+      // FR-010 Task 6.1: 初期テーマを即時適用 (DOM パース後すぐ)。
+      // Astro が Vite で transpile し defer 属性付き module として hoist する。
+      // <script id="card-data"> はページ body 内に配置されているが、
+      // module は HTML パース完了後に実行されるため document.body と
+      // #card-data の両方にアクセス可能。
+      import "../scripts/theme-init.inline.ts";
+    </script>
   </head>
   <body>
     <slot />
