@@ -59,10 +59,10 @@ const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Dig
     <TabSwitcher initialFace="front" />
 
     <div class="card" id="card">
-      <article class="card-face card-face--front" id="card-face-front" role="tabpanel" aria-labelledby="card-face-front-tab">
+      <article class="card-face card-face--front" id="card-face-front" role="tabpanel">
         <CardFront profile={cardData.profile} />
       </article>
-      <article class="card-face card-face--back" id="card-face-back" role="tabpanel" aria-hidden="true">
+      <article class="card-face card-face--back" id="card-face-back" role="tabpanel" aria-hidden="true" inert>
         <CardBack hierarchy={cardData.hierarchy} repos={cardData.repos} />
       </article>
     </div>

@@ -14,7 +14,30 @@ export function flipTo(face: "front" | "back"): void {
   const card = document.getElementById("card");
   if (!card) return;
   card.classList.toggle("is-flipped", face === "back");
+  syncFaceFocusability(face);
   syncTabState(face);
+}
+
+/**
+ * 非アクティブ側の面を inert + aria-hidden にし、Tab フォーカスや AT を
+ * アクティブな面に閉じ込める。aria-hidden-focus a11y 警告を解消する。
+ */
+function syncFaceFocusability(activeFace: "front" | "back"): void {
+  const front = document.getElementById("card-face-front");
+  const back = document.getElementById("card-face-back");
+  setInert(front, activeFace !== "front");
+  setInert(back, activeFace !== "back");
+}
+
+function setInert(el: HTMLElement | null, inert: boolean): void {
+  if (!el) return;
+  if (inert) {
+    el.setAttribute("inert", "");
+    el.setAttribute("aria-hidden", "true");
+  } else {
+    el.removeAttribute("inert");
+    el.removeAttribute("aria-hidden");
+  }
 }
 
 function syncTabState(activeFace: "front" | "back"): void {
