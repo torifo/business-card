@@ -1,0 +1,74 @@
+{
+  "_note": "このファイルは作業中のサンプル値です。プロフィール・リンク・hierarchy などは公開前の最終値ではなく、Wave を進めながら適宜更新する想定です。mergeConfig は _note を含む未知フィールドを無視する設計とします。",
+  "profile": {
+    "name": "庄司 彬人",
+    "nameEn": "Akito Shoji",
+    "avatarUrl": "/images/avatar.png",
+    "title": "Adtech × AI Engineer",
+    "tagline": "フルスタックデベロッパー",
+    "links": [
+      { "type": "github", "url": "https://github.com/torifo" },
+      { "type": "x", "url": "https://x.com/kuroba_Genshin" },
+      { "type": "email", "url": "progbot.clover@gmail.com" }
+    ]
+  },
+  "geo": {
+    "lat": 35.6762,
+    "lng": 139.6503,
+    "tz": "Asia/Tokyo"
+  },
+  "hierarchy": [
+    {
+      "id": "skill",
+      "label": "Skill",
+      "children": [
+        {
+          "id": "language",
+          "label": "Language",
+          "leaves": [
+            { "id": "go", "label": "Go", "aliases": ["golang"] },
+            { "id": "typescript", "label": "TypeScript", "aliases": ["ts"] },
+            { "id": "python", "label": "Python" },
+            { "id": "dart", "label": "Dart" }
+          ]
+        },
+        {
+          "id": "framework",
+          "label": "Framework",
+          "leaves": [
+            { "id": "flutter", "label": "Flutter" },
+            { "id": "nextjs", "label": "Next.js", "aliases": ["next"] },
+            { "id": "astro", "label": "Astro" }
+          ]
+        },
+        {
+          "id": "infra",
+          "label": "Infra",
+          "leaves": [
+            { "id": "gcp", "label": "Google Cloud" },
+            { "id": "docker", "label": "Docker" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "category",
+      "label": "Domain",
+      "children": [
+        {
+          "id": "domain",
+          "label": "Domain",
+          "leaves": [
+            { "id": "adtech", "label": "Adtech" },
+            { "id": "ai", "label": "AI / LLM" },
+            { "id": "tool", "label": "Dev Tool" },
+            { "id": "design", "label": "Design" }
+          ]
+        }
+      ]
+    }
+  ],
+  "repoOverrides": {},
+  "excludeRepos": [],
+  "pinnedRepos": []
+}
