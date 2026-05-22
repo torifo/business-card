@@ -1,10 +1,97 @@
 ---
+/**
+ * ルートページ (Task 5.1)。
+ *
+ * - ビルド時に GitHub API から取得した repo を mergeConfig と
+ *   computeSunTimes と合成して CardData を組み立て、HTML 内に JSON
+ *   インライン埋め込み (FR-007)。
+ * - 表/裏のマークアップを両方出力し、初期表示は front。3D フリップ
+ *   実装と back face の visibility 切替は Wave 6 (card-flip.ts +
+ *   src/styles/card.css) で担当する。本ファイルは構造を提供するのみ。
+ */
 import Layout from "../layouts/Layout.astro";
+import CardFront from "../components/CardFront.astro";
+import CardBack from "../components/CardBack.astro";
+import TabSwitcher from "../components/TabSwitcher.astro";
+import { fetchRepos } from "../lib/fetchRepos";
+import { mergeConfig } from "../lib/mergeConfig";
+import { computeSunTimes } from "../lib/computeSunTimes";
+import cardConfigRaw from "../../card-config.json" with { type: "json" };
+import type { CardConfig, CardData } from "../types/card";
+
+const config = cardConfigRaw as unknown as CardConfig;
+
+const githubLink = config.profile.links.find((l) => l.type === "github");
+if (!githubLink) {
+  throw new Error("card-config.json: profile.links に github エントリが必要です");
+}
+const username = githubLink.url.split("/").pop();
+if (!username) {
+  throw new Error(`card-config.json: GitHub link から username を抽出できません: ${githubLink.url}`);
+}
+
+const rawRepos = await fetchRepos({
+  username,
+  token: import.meta.env.GITHUB_PAT,
+});
+
+const merged = mergeConfig(rawRepos, config);
+const sunTimes = computeSunTimes(config.geo, 365);
+
+const cardData: CardData = {
+  generatedAt: new Date().toISOString(),
+  profile: merged.profile,
+  repos: merged.repos,
+  hierarchy: merged.hierarchy,
+  sunTimes,
+  geo: config.geo,
+};
+
+const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Digital Business Card`;
 ---
 
-<Layout title="Digital Business Card">
-  <main>
-    <h1>Digital Business Card</h1>
-    <p>Wave 1 のベースライン。実装は Wave 2 以降で進める。</p>
+<Layout title={pageTitle} description={cardData.profile.tagline}>
+  <main class="card-stage">
+    <TabSwitcher initialFace="front" />
+
+    <div class="card" id="card">
+      <article class="card-face card-face--front" id="card-face-front" role="tabpanel" aria-labelledby="card-face-front-tab">
+        <CardFront profile={cardData.profile} />
+      </article>
+      <article class="card-face card-face--back" id="card-face-back" role="tabpanel" aria-hidden="true" hidden>
+        <CardBack hierarchy={cardData.hierarchy} repos={cardData.repos} />
+      </article>
+    </div>
   </main>
+
+  <script id="card-data" type="application/json" set:html={JSON.stringify(cardData)} is:inline />
 </Layout>
+
+<style>
+  .card-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .card {
+    width: 100%;
+    position: relative;
+  }
+
+  .card-face {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  /*
+   * Wave 5 時点では back face を hidden 属性で隠す。
+   * Wave 6 で 3D フリップ + prefers-reduced-motion クロスフェードを
+   * src/styles/card.css に実装し、is-flipped クラスで visibility を切替える。
+   */
+</style>
