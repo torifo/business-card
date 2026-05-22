@@ -1,7 +1,2 @@
 @import "tailwindcss";
-
-/*
- * Task 1.1 のプレースホルダ。
- * Task 3.4 でセマンティック CSS 変数を tokens.css として導入し、
- * このファイルからインポートする想定。
- */
+@import "./tokens.css";

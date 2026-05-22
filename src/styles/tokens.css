@@ -1,0 +1,56 @@
+/*
+ * セマンティック CSS 変数定義 (Task 3.4 / FR-010-012)。
+ *
+ * - :root の値はデフォルト (= night-mode 相当)。
+ *   ポートフォリオでも body にクラスが付かない場合は dark gradient 表示なので整合。
+ * - body.light-mode で日中用パレットに上書き。
+ * - body.night-mode は :root を継承する形なので追加上書きはしない。
+ *
+ * 値はポートフォリオ本番 CSS から写経 (手動同期方針)。
+ */
+
+:root {
+  /* Colors (default = night-mode) */
+  --color-bg: #0f0f23;
+  --color-bg-grad: linear-gradient(135deg, #0f0f23, #1a1a2e, #16213e);
+  --color-text: #ffffff;
+  --color-text-muted: #d1d5db;
+  --color-accent: #22d3ee;        /* cyan-400 */
+  --color-accent-strong: #a78bfa; /* purple-400 */
+  --color-surface: rgba(255, 255, 255, 0.05); /* glass */
+  --color-border: rgba(255, 255, 255, 0.1);
+
+  /* Spacing / radius */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* Typography (フォント整合は対象外。システムフォント優先) */
+  --font-body: system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  --font-heading: var(--font-body);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Motion */
+  --transition-theme: background 0.5s ease, color 0.3s ease;
+}
+
+/* night-mode を明示クラスで指定された場合: :root と同一値で十分 */
+
+/* light-mode: ポートフォリオの本番カラーを写経 */
+body.light-mode {
+  --color-bg: #cbd5e1;
+  --color-bg-grad: linear-gradient(135deg, #cbd5e1, #94a3b8, #64748b);
+  --color-text: #1f2937;
+  --color-text-muted: #374151;
+  --color-accent: #0c4a6e;
+  --color-accent-strong: #7c3aed;
+  --color-surface: rgba(255, 255, 255, 0.4);
+  --color-border: rgba(0, 0, 0, 0.2);
+}
+
+body {
+  background: var(--color-bg-grad);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  transition: var(--transition-theme);
+  min-height: 100vh;
+}
