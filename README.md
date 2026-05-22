@@ -134,12 +134,17 @@ docker run --rm -p 8080:80 business-card:dev
 ## Testing
 
 ```bash
-# unit (Vitest)
+# Unit (Vitest, src/lib/*)
 npm test
 
-# 型チェック
+# E2E (Playwright, tests/e2e/*)
+npm run test:e2e
+
+# 型チェック (Astro + TS)
 npm run check
 ```
+
+E2E は preview サーバを `playwright.config.ts` の webServer 設定で自動起動する。
 
 ## Reuse for Your Own Portfolio (Secondary Goal)
 
