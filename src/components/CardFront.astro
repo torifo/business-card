@@ -1,11 +1,11 @@
 ---
 /**
  * 名刺の表面 (FR-001)。
- * 氏名・アバター・肩書・tagline・SNS / 連絡先リンクを縦並びで配置する。
- * Profile は props 経由で受け取り、コンポーネント内でのハードコード値は持たない。
+ * 物理名刺の比率 (91:55 ≒ 1.65:1) を意識した横長レイアウト。
+ * 左に円形アバター、右に氏名・肩書・tagline・SNS / 連絡先リンクを縦並びで配置する。
  *
- * インタラクションは Wave 6 (card-flip.ts) で配線する。本コンポーネントは
- * マークアップとスタイルのみを提供する。
+ * Profile は props 経由で受け取り、コンポーネント内でのハードコード値は持たない。
+ * インタラクションは Wave 6 (card-flip.ts) で配線する。
  */
 import type { Profile, ProfileLink } from "../types/card";
 
@@ -15,7 +15,6 @@ interface Props {
 
 const { profile } = Astro.props;
 
-/** SNS / 連絡先リンクの短ラベル。design.md UI スケッチに合わせる (絵文字は不使用)。 */
 const LINK_LABEL: Record<ProfileLink["type"], string> = {
   github: "GH",
   x: "X",
@@ -26,120 +25,158 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
 ---
 
 <section class="card-front" aria-label="プロフィール表面">
-  <img
-    class="card-front__avatar"
-    src={profile.avatarUrl}
-    alt={`${profile.name} のアバター`}
-    width="200"
-    height="200"
-    decoding="async"
-  />
-
-  <div class="card-front__names">
-    <h1 class="card-front__name-jp">{profile.name}</h1>
-    <p class="card-front__name-en">{profile.nameEn}</p>
+  <div class="card-front__avatar-col">
+    <img
+      class="card-front__avatar"
+      src={profile.avatarUrl}
+      alt={`${profile.name} のアバター`}
+      width="180"
+      height="180"
+      decoding="async"
+    />
   </div>
 
-  <p class="card-front__title">{profile.title}</p>
-  <p class="card-front__tagline">{profile.tagline}</p>
+  <div class="card-front__info-col">
+    <div class="card-front__names">
+      <h1 class="card-front__name-jp">{profile.name}</h1>
+      <p class="card-front__name-en">{profile.nameEn}</p>
+    </div>
 
-  <ul class="card-front__links" aria-label="SNS / 連絡先">
-    {
-      profile.links.map((link) => (
-        <li>
-          <a
-            class="card-front__link"
-            href={link.url}
-            target={link.type === "email" ? undefined : "_blank"}
-            rel={link.type === "email" ? undefined : "noopener noreferrer"}
-            aria-label={`${LINK_LABEL[link.type]}: ${link.url}`}
-          >
-            {LINK_LABEL[link.type]}
-          </a>
-        </li>
-      ))
-    }
-  </ul>
+    <p class="card-front__title">{profile.title}</p>
+    <p class="card-front__tagline">{profile.tagline}</p>
+
+    <ul class="card-front__links" aria-label="SNS / 連絡先">
+      {
+        profile.links.map((link) => (
+          <li>
+            <a
+              class:list={["card-front__link", link.type === "github" && "card-front__link--icon"]}
+              href={link.url}
+              target={link.type === "email" ? undefined : "_blank"}
+              rel={link.type === "email" ? undefined : "noopener noreferrer"}
+              aria-label={`${LINK_LABEL[link.type]}: ${link.url}`}
+            >
+              {link.type === "github" ? (
+                <svg
+                  class="card-front__icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+              ) : (
+                LINK_LABEL[link.type]
+              )}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </section>
 
 <style>
   .card-front {
-    display: flex;
-    flex-direction: column;
+    /* 親 .card-face--front 側で aspect-ratio 91/55 を持つので、ここは高さフィルのみ */
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
+    gap: 0.875rem;
+    padding: 1rem;
     align-items: center;
-    gap: 0.75rem;
-    padding: 2rem 1.25rem;
-    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .card-front__avatar-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .card-front__avatar {
-    width: 160px;
-    height: 160px;
+    width: 100%;
+    max-width: 132px;
+    aspect-ratio: 1 / 1;
+    height: auto;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--color-border);
     background: var(--color-surface);
   }
 
+  .card-front__info-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0; /* grid セル内で text overflow を許可 */
+  }
+
   .card-front__names {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    gap: 0.05rem;
   }
 
   .card-front__name-jp {
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 4.2vw, 1.5rem);
     font-weight: 700;
     color: var(--color-text);
     margin: 0;
     letter-spacing: 0.04em;
+    line-height: 1.15;
   }
 
   .card-front__name-en {
-    font-size: 0.875rem;
+    font-size: clamp(0.7rem, 2.5vw, 0.85rem);
     color: var(--color-text-muted);
     margin: 0;
     letter-spacing: 0.08em;
+    line-height: 1.2;
   }
 
   .card-front__title {
-    font-size: 0.95rem;
+    font-size: clamp(0.75rem, 2.8vw, 0.9rem);
     color: var(--color-accent);
     font-weight: 600;
     margin: 0;
+    line-height: 1.3;
   }
 
   .card-front__tagline {
-    font-size: 0.85rem;
+    font-size: clamp(0.7rem, 2.4vw, 0.8rem);
     color: var(--color-text-muted);
     margin: 0;
-    line-height: 1.5;
-    max-width: 28ch;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .card-front__links {
     list-style: none;
     padding: 0;
-    margin: 0.5rem 0 0;
+    margin: 0.25rem 0 0;
     display: flex;
-    gap: 0.5rem;
+    gap: 0.35rem;
     flex-wrap: wrap;
-    justify-content: center;
   }
 
   .card-front__link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.5rem;
-    height: 2.5rem;
-    padding: 0 0.75rem;
+    min-width: 2rem;
+    height: 1.85rem;
+    padding: 0 0.6rem;
     border-radius: var(--radius-md);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     color: var(--color-text);
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
@@ -151,13 +188,15 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
     color: var(--color-bg);
   }
 
-  @media (min-width: 400px) {
-    .card-front__avatar {
-      width: 180px;
-      height: 180px;
-    }
-    .card-front__name-jp {
-      font-size: 1.75rem;
-    }
+  /* アイコン用のリンクは正方形にしてラベル分のパディングを除く */
+  .card-front__link--icon {
+    padding: 0;
+    width: 1.85rem;
+  }
+
+  .card-front__icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    display: block;
   }
 </style>

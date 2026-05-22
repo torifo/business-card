@@ -33,6 +33,10 @@ if (!username) {
 const rawRepos = await fetchRepos({
   username,
   token: import.meta.env.GITHUB_PAT,
+  // dev では .astro/cache に 1 時間キャッシュし、HMR の度に API を叩かないようにする。
+  // 本番ビルドでは指定しない (常に最新を取得)。
+  cacheFile: import.meta.env.DEV ? ".astro/cache/repos.json" : undefined,
+  cacheTtlMs: 60 * 60 * 1000,
 });
 
 const merged = mergeConfig(rawRepos, config);
@@ -87,6 +91,11 @@ const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Dig
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+  }
+
+  /* 名刺の物理比 91:55 を表面で再現 */
+  .card-face--front {
+    aspect-ratio: 91 / 55;
   }
 
   /*
