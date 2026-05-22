@@ -1,0 +1,74 @@
+/*
+ * 名刺カード本体のレイアウトと 3D フリップ機構 (FR-003 / NFR Accessibility)。
+ *
+ * - .card は 91:55 の物理名刺アスペクト比を持ち、両面を absolute で重ねる
+ * - .is-flipped クラスで rotateY(180deg) を適用してフリップ
+ * - 裏面コンテンツが収まりきらない場合は内部スクロール (overflow-y: auto)
+ * - prefers-reduced-motion: reduce が有効なら 3D 回転を無効化し、opacity の
+ *   クロスフェードに置換する
+ */
+
+.card-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  max-width: 480px;
+  margin: 0 auto;
+  perspective: 1200px;
+}
+
+.card {
+  width: 100%;
+  position: relative;
+  aspect-ratio: 91 / 55;
+  transform-style: preserve-3d;
+  transition: transform 600ms ease;
+}
+
+.card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-face--back {
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* NFR Accessibility: prefers-reduced-motion = reduce ならクロスフェードへ */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transform: none !important;
+    transition: none;
+  }
+  .card-face {
+    transition: opacity 300ms ease;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+  }
+  .card-face--back {
+    transform: none; /* 回転は無効化、重なりは absolute のまま維持 */
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card.is-flipped .card-face--front {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card.is-flipped .card-face--back {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

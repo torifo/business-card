@@ -19,11 +19,13 @@ const { title, description = "デジタル名刺" } = Astro.props;
     <title>{title}</title>
     <script>
       // FR-010: 初期テーマ即時適用 (Task 6.1) + 10 分タイマー (Task 6.2)。
+      // FR-003: 表/裏のフリップ制御 (Task 6.3)。
       // Astro が Vite で transpile し defer 属性付き module として hoist する。
       // module は HTML パース完了後に実行されるため document.body と
-      // #card-data の両方にアクセス可能。
+      // #card-data / #card の両方にアクセス可能。
       import "../scripts/theme-init.inline.ts";
       import "../scripts/theme.ts";
+      import "../scripts/card-flip.ts";
     </script>
   </head>
   <body>

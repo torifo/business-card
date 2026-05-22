@@ -62,7 +62,7 @@ const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Dig
       <article class="card-face card-face--front" id="card-face-front" role="tabpanel" aria-labelledby="card-face-front-tab">
         <CardFront profile={cardData.profile} />
       </article>
-      <article class="card-face card-face--back" id="card-face-back" role="tabpanel" aria-hidden="true" hidden>
+      <article class="card-face card-face--back" id="card-face-back" role="tabpanel" aria-hidden="true">
         <CardBack hierarchy={cardData.hierarchy} repos={cardData.repos} />
       </article>
     </div>
@@ -71,36 +71,4 @@ const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Dig
   <script id="card-data" type="application/json" set:html={JSON.stringify(cardData)} is:inline />
 </Layout>
 
-<style>
-  .card-stage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
-  .card {
-    width: 100%;
-    position: relative;
-  }
-
-  .card-face {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  /* 名刺の物理比 91:55 を表面で再現 */
-  .card-face--front {
-    aspect-ratio: 91 / 55;
-  }
-
-  /*
-   * Wave 5 時点では back face を hidden 属性で隠す。
-   * Wave 6 で 3D フリップ + prefers-reduced-motion クロスフェードを
-   * src/styles/card.css に実装し、is-flipped クラスで visibility を切替える。
-   */
-</style>
+<!-- カードのレイアウトとフリップは src/styles/card.css にまとめている。 -->
