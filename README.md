@@ -101,6 +101,36 @@ business-card/
 
 セマンティック CSS 変数は [`src/styles/tokens.css`](src/styles/tokens.css) に集約。`:root` は night-mode の既定値で、`body.light-mode` が日中の値を上書きする。日没連動のロジックは `theme-init.inline.ts` / `theme.ts` を参照。
 
+## Deployment
+
+本番デプロイは ポートフォリオ (`portorifo.riumu.net`) と同じ Docker + nginx-proxy 構成に相乗りする。
+
+- **Domain**: `business-card.riumu.net` (Let's Encrypt 自動取得)
+- **Image**: `ghcr.io/torifo/business-card:<tag>`
+- **Network**: `global-proxy-network` (VPS で稼働中の共通ネットワーク)
+
+### 流れ
+
+1. `main` への push で `.github/workflows/deploy.yml` が起動し、Astro ビルド → Docker イメージを GHCR に push する
+2. VPS に SSH し、`deploy.sh [tag]` を実行して新しいイメージを pull + restart
+3. nginx-proxy が `business-card.riumu.net` へのトラフィックをコンテナに振り分ける
+
+### 必要な GitHub Secrets
+
+| Secret 名 | 用途 |
+|---|---|
+| `GH_PAT_PUBLIC` | ビルド時 GitHub API レート対策 (`public_repo` 読み取りのみで十分) |
+| `GITHUB_TOKEN` | GHCR への push 用 (Actions が自動付与) |
+
+### ローカル動作確認 (Docker)
+
+```bash
+npm run build
+docker build -t business-card:dev .
+docker run --rm -p 8080:80 business-card:dev
+# http://localhost:8080/
+```
+
 ## Testing
 
 ```bash

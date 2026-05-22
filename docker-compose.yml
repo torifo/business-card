@@ -1,0 +1,16 @@
+services:
+  business-card:
+    image: ghcr.io/torifo/business-card:${IMAGE_TAG:-latest}
+    container_name: business-card
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=business-card.riumu.net
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=business-card.riumu.net
+      - LETSENCRYPT_EMAIL=progbot.clover@gmail.com
+    networks:
+      - global-proxy-network
+
+networks:
+  global-proxy-network:
+    external: true
