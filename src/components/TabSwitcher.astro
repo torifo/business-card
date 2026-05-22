@@ -1,0 +1,81 @@
+---
+/**
+ * 表 / 裏のタブ切り替え UI (FR-003)。
+ *
+ * - 2 つの <button data-face="front|back"> を提供する
+ * - 初期 active は initialFace prop (default "front")。FR-004 の URL パラメータ
+ *   解釈は Wave 6 (card-filter.ts) で行い、必要に応じて aria-selected と
+ *   .card.is-flipped を後付けする
+ * - sticky top でスクロール中も常時アクセス可能
+ *
+ * クリック挙動 (フリップ発火) は Wave 6 (card-flip.ts) で配線する。
+ */
+interface Props {
+  initialFace?: "front" | "back";
+}
+
+const { initialFace = "front" } = Astro.props;
+---
+
+<div class="tab-switcher" role="tablist" aria-label="名刺の面切替">
+  <button
+    type="button"
+    role="tab"
+    data-face="front"
+    aria-selected={initialFace === "front" ? "true" : "false"}
+    aria-controls="card-face-front"
+    class:list={["tab-switcher__btn", initialFace === "front" && "is-active"]}
+  >
+    Front
+  </button>
+  <button
+    type="button"
+    role="tab"
+    data-face="back"
+    aria-selected={initialFace === "back" ? "true" : "false"}
+    aria-controls="card-face-back"
+    class:list={["tab-switcher__btn", initialFace === "back" && "is-active"]}
+  >
+    Back
+  </button>
+</div>
+
+<style>
+  .tab-switcher {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    margin: 0.5rem auto;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+  }
+
+  .tab-switcher__btn {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0.4rem 1.25rem;
+    border-radius: 999px;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .tab-switcher__btn:hover,
+  .tab-switcher__btn:focus-visible {
+    color: var(--color-text);
+    outline: none;
+  }
+
+  .tab-switcher__btn.is-active {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+</style>
