@@ -1,0 +1,131 @@
+---
+/**
+ * 個別のリポジトリカード (FR-002)。
+ * Repo を受け取り、名前・説明・タグ・スター数・GitHub リンクを表示する。
+ *
+ * data-tags 属性に leaf tag id 列を持たせ、card-filter.ts (Wave 6) からの
+ * フィルタリングが DOM クラス操作だけで実現できるようにする。
+ * 非ヒット時のスタイルは .repo-card.is-hidden として CardBack 側で定義する。
+ */
+import type { Repo } from "../types/card";
+
+interface Props {
+  repo: Repo;
+}
+
+const { repo } = Astro.props;
+const tagAttr = repo.tags.join(",");
+---
+
+<article
+  class="repo-card"
+  data-repo-id={repo.id}
+  data-tags={tagAttr}
+  data-pinned={repo.pinned ? "true" : "false"}
+>
+  <header class="repo-card__header">
+    <h3 class="repo-card__name">{repo.name}</h3>
+    <span class="repo-card__stars" aria-label={`スター数 ${repo.stars}`}>
+      Star: {repo.stars}
+    </span>
+  </header>
+
+  {
+    repo.description && (
+      <p class="repo-card__description">{repo.description}</p>
+    )
+  }
+
+  {
+    repo.tags.length > 0 && (
+      <ul class="repo-card__tags" aria-label="タグ">
+        {repo.tags.map((tag) => (
+          <li class="repo-card__tag">{tag}</li>
+        ))}
+      </ul>
+    )
+  }
+
+  <a
+    class="repo-card__link"
+    href={repo.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label={`${repo.name} を GitHub で開く`}
+  >
+    → {repo.url.replace(/^https?:\/\//, "")}
+  </a>
+</article>
+
+<style>
+  .repo-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: opacity 300ms ease, transform 300ms ease;
+  }
+
+  .repo-card__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .repo-card__name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+    word-break: break-word;
+  }
+
+  .repo-card__stars {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .repo-card__description {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .repo-card__tags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .repo-card__tag {
+    font-size: 0.7rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.15);
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+  }
+
+  .repo-card__link {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    word-break: break-all;
+  }
+
+  .repo-card__link:hover,
+  .repo-card__link:focus-visible {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+</style>

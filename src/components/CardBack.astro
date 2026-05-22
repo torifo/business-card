@@ -1,0 +1,159 @@
+---
+/**
+ * 名刺の裏面 (FR-002 / FR-006)。
+ *
+ * - 階層ドロップダウン (Category > Subcategory > Tag) の 3 段マークアップ
+ * - リポジトリカードのグリッド
+ *
+ * カテゴリ以降の <select> はマークアップを空で出し、Wave 6 (card-filter.ts)
+ * が DOMContentLoaded 後に動的に option を populate する。data-* 属性で
+ * hierarchy / repo のメタデータを保持し、フィルタリングは
+ * .repo-card.is-hidden の付替のみで実現する (NFR Offline)。
+ */
+import type { HierarchyNode, Repo } from "../types/card";
+import RepoCard from "./RepoCard.astro";
+
+interface Props {
+  hierarchy: HierarchyNode[];
+  repos: Repo[];
+}
+
+const { hierarchy, repos } = Astro.props;
+---
+
+<section class="card-back" aria-label="リポジトリ実績">
+  <form class="card-back__filters" aria-label="リポジトリフィルタ">
+    <label class="card-back__filter">
+      <span class="card-back__filter-label">Category</span>
+      <select id="filter-category" class="card-back__select" data-filter-level="category">
+        <option value="">All</option>
+        {hierarchy.map((node) => <option value={node.id}>{node.label}</option>)}
+      </select>
+    </label>
+
+    <label class="card-back__filter">
+      <span class="card-back__filter-label">Subcategory</span>
+      <select
+        id="filter-subcategory"
+        class="card-back__select"
+        data-filter-level="subcategory"
+        disabled
+      >
+        <option value="">All</option>
+      </select>
+    </label>
+
+    <label class="card-back__filter">
+      <span class="card-back__filter-label">Tag</span>
+      <select
+        id="filter-tag"
+        class="card-back__select"
+        data-filter-level="tag"
+        disabled
+      >
+        <option value="">All</option>
+      </select>
+    </label>
+  </form>
+
+  {
+    repos.length === 0 ? (
+      <p class="card-back__empty">準備中</p>
+    ) : (
+      <ul class="card-back__grid" data-repo-grid>
+        {repos.map((repo) => (
+          <li>
+            <RepoCard repo={repo} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</section>
+
+<style>
+  .card-back {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .card-back__filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-back__filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .card-back__filter-label {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .card-back__select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .card-back__select:focus-visible {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+
+  .card-back__select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .card-back__empty {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  .card-back__grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* FR-006: フィルタリングは DOM クラスのみで実現 */
+  :global(.repo-card.is-hidden) {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;
+  }
+
+  @media (min-width: 420px) {
+    .card-back__filters {
+      flex-direction: row;
+      gap: 0.5rem;
+    }
+    .card-back__filter {
+      flex: 1;
+    }
+  }
+</style>
