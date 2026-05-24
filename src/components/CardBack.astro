@@ -24,7 +24,10 @@ const { hierarchy, repos } = Astro.props;
 <section class="card-back" aria-label="リポジトリ実績">
   <form class="card-back__filters" aria-label="リポジトリフィルタ">
     <label class="card-back__filter">
-      <span class="card-back__filter-label">Category</span>
+      <span class="card-back__filter-label">
+        <span class="i18n-ja">カテゴリ</span>
+        <span class="i18n-en">Category</span>
+      </span>
       <select id="filter-category" class="card-back__select" data-filter-level="category">
         <option value="">All</option>
         {hierarchy.map((node) => <option value={node.id}>{node.label}</option>)}
@@ -32,7 +35,10 @@ const { hierarchy, repos } = Astro.props;
     </label>
 
     <label class="card-back__filter">
-      <span class="card-back__filter-label">Subcategory</span>
+      <span class="card-back__filter-label">
+        <span class="i18n-ja">サブカテゴリ</span>
+        <span class="i18n-en">Subcategory</span>
+      </span>
       <select
         id="filter-subcategory"
         class="card-back__select"
@@ -44,7 +50,10 @@ const { hierarchy, repos } = Astro.props;
     </label>
 
     <label class="card-back__filter">
-      <span class="card-back__filter-label">Tag</span>
+      <span class="card-back__filter-label">
+        <span class="i18n-ja">タグ</span>
+        <span class="i18n-en">Tag</span>
+      </span>
       <select
         id="filter-tag"
         class="card-back__select"
@@ -58,15 +67,28 @@ const { hierarchy, repos } = Astro.props;
 
   {
     repos.length === 0 ? (
-      <p class="card-back__empty">準備中</p>
+      <p class="card-back__empty">
+        <span class="i18n-ja">準備中</span>
+        <span class="i18n-en">Coming soon</span>
+      </p>
     ) : (
-      <ul class="card-back__grid" data-repo-grid>
-        {repos.map((repo) => (
-          <li>
-            <RepoCard repo={repo} />
-          </li>
-        ))}
-      </ul>
+      <>
+        <ul class="card-back__grid" data-repo-grid>
+          {repos.map((repo) => (
+            <li>
+              <RepoCard repo={repo} />
+            </li>
+          ))}
+        </ul>
+        <p
+          class="card-back__empty card-back__empty--filter"
+          id="filter-empty-state"
+          hidden
+        >
+          <span class="i18n-ja">該当する作品がありません</span>
+          <span class="i18n-en">No matching works</span>
+        </p>
+      </>
     )
   }
 </section>
@@ -75,14 +97,25 @@ const { hierarchy, repos } = Astro.props;
   .card-back {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1.25rem 1rem;
+    /* 縦パディングを廃して子要素 (filters / grid) が個別に持つことで、
+       sticky filter が裏面の上端まで詰めて貼り付くようにする */
+    padding: 0;
   }
 
   .card-back__filters {
+    /* スクロール時はフィルタが裏面の上部に貼り付く */
+    position: sticky;
+    top: 0;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    /* card-face と同じ色で不透明にして、下に流れた repo card が透けないようにする */
+    background: var(--color-bg);
+    box-shadow: 0 1px 0 var(--color-border), 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
   }
 
   .card-back__filter {
@@ -123,28 +156,33 @@ const { hierarchy, repos } = Astro.props;
   .card-back__empty {
     color: var(--color-text-muted);
     text-align: center;
-    padding: 2rem 0;
+    padding: 2rem 1rem;
+  }
+
+  .card-back__empty--filter {
+    font-size: 0.9rem;
   }
 
   .card-back__grid {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0.75rem 1rem 1.25rem;
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
 
-  /* FR-006: フィルタリングは DOM クラスのみで実現 */
+  /* 非ヒットの <li> はレイアウトから完全に取り除く (grid gap が累積しないように) */
+  .card-back__grid > li:has(.repo-card.is-hidden) {
+    display: none;
+  }
+
+  /* FR-006: フィルタリングは DOM クラスのみで実現。
+     transition は表示中 → 非表示の方向にだけ効くが、:has 経由で
+     display: none に切り替わるので実用上は瞬時に消える。 */
   :global(.repo-card.is-hidden) {
     opacity: 0;
-    transform: scale(0.95);
     pointer-events: none;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    border-width: 0;
-    overflow: hidden;
   }
 
   @media (min-width: 420px) {

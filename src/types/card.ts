@@ -118,6 +118,12 @@ export interface CardConfig {
   excludeRepos: string[];
   /** 上位表示する repo full_name の配列。順序が表示順。 */
   pinnedRepos: string[];
+  /**
+   * リポジトリ名のプレフィックスから tag を自動付与するルール。
+   * 例: `{ "design-": "design" }` で `design-*` の repo に "design" タグを追加。
+   * 既存タグ (language マッピング・repoOverrides) と union される。
+   */
+  namePrefixTags?: Record<string, string>;
 }
 
 /** card-config.json での GitHub 生データに対する個別上書き。 */

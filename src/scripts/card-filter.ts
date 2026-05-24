@@ -44,11 +44,47 @@ if (dataEl?.textContent) {
   }
 }
 
+interface Availability {
+  /** repo がひとつでも持つ leaf id の集合 */
+  leaves: Set<string>;
+  /** 表示可能な subcategory id を持つ category id の集合 */
+  categories: Set<string>;
+  /** category id → 表示可能な subcategory id の集合 */
+  subcategoriesByCategory: Map<string, Set<string>>;
+}
+
+function buildAvailability(
+  hierarchy: HierarchyNode[],
+  repos: RepoLite[],
+): Availability {
+  const leaves = new Set<string>();
+  for (const r of repos) for (const t of r.tags) leaves.add(t);
+
+  const subcategoriesByCategory = new Map<string, Set<string>>();
+  const categories = new Set<string>();
+  for (const cat of hierarchy) {
+    const availSubs = new Set<string>();
+    for (const sub of cat.children) {
+      if (sub.leaves.some((l) => leaves.has(l.id))) availSubs.add(sub.id);
+    }
+    if (availSubs.size > 0) {
+      subcategoriesByCategory.set(cat.id, availSubs);
+      categories.add(cat.id);
+    }
+  }
+  return { leaves, categories, subcategoriesByCategory };
+}
+
 function init(data: Embedded): void {
   const categorySelect = byId<HTMLSelectElement>("filter-category");
   const subcategorySelect = byId<HTMLSelectElement>("filter-subcategory");
   const tagSelect = byId<HTMLSelectElement>("filter-tag");
   if (!categorySelect || !subcategorySelect || !tagSelect) return;
+
+  const avail = buildAvailability(data.hierarchy, data.repos);
+
+  // Category dropdown を availability で再構築 (静的 HTML 側は全件入っている)
+  populateCategories(categorySelect, data.hierarchy, avail);
 
   // 1. URL ?target= の初期処理 (FR-004 / FR-005)
   const params = new URLSearchParams(location.search);
@@ -56,12 +92,12 @@ function init(data: Embedded): void {
 
   if (target) {
     const resolved = resolveTarget(target, data.hierarchy);
-    if (resolved && hasMatchingRepo(resolved.leaf.id, data.repos)) {
+    if (resolved && avail.leaves.has(resolved.leaf.id)) {
       // dropdown を該当パスに合わせる
-      selectCategory(categorySelect, resolved.category.id);
-      populateSubcategories(subcategorySelect, resolved.category);
+      selectValue(categorySelect, resolved.category.id);
+      populateSubcategories(subcategorySelect, resolved.category, avail);
       selectValue(subcategorySelect, resolved.subcategory.id);
-      populateTags(tagSelect, resolved.subcategory);
+      populateTags(tagSelect, resolved.subcategory, avail);
       selectValue(tagSelect, resolved.leaf.id);
       applyFilter(resolved.leaf.id);
     } else {
@@ -78,7 +114,7 @@ function init(data: Embedded): void {
     const catId = categorySelect.value;
     const cat = data.hierarchy.find((c) => c.id === catId);
     if (cat) {
-      populateSubcategories(subcategorySelect, cat);
+      populateSubcategories(subcategorySelect, cat, avail);
     } else {
       resetSelect(subcategorySelect);
     }
@@ -92,7 +128,7 @@ function init(data: Embedded): void {
     const cat = data.hierarchy.find((c) => c.id === catId);
     const sub = cat?.children.find((s) => s.id === subId);
     if (sub) {
-      populateTags(tagSelect, sub);
+      populateTags(tagSelect, sub, avail);
     } else {
       resetSelect(tagSelect);
     }
@@ -121,43 +157,72 @@ function resolveTarget(
   return null;
 }
 
-function hasMatchingRepo(leafId: string, repos: RepoLite[]): boolean {
-  return repos.some((r) => r.tags.includes(leafId));
-}
-
 function applyFilter(leafId: string | null): void {
   const cards = document.querySelectorAll<HTMLElement>(".repo-card");
+  let visible = 0;
   for (const card of cards) {
+    let show: boolean;
     if (leafId === null) {
-      card.classList.remove("is-hidden");
-      continue;
+      show = true;
+    } else {
+      const tags = (card.dataset.tags ?? "").split(",").filter(Boolean);
+      show = tags.includes(leafId);
     }
-    const tags = (card.dataset.tags ?? "").split(",").filter(Boolean);
-    card.classList.toggle("is-hidden", !tags.includes(leafId));
+    card.classList.toggle("is-hidden", !show);
+    if (show) visible += 1;
+  }
+  // ヒット 0 件のときは "該当なし" メッセージを表示
+  const emptyEl = document.getElementById("filter-empty-state");
+  if (emptyEl) {
+    if (cards.length > 0 && visible === 0) {
+      emptyEl.removeAttribute("hidden");
+    } else {
+      emptyEl.setAttribute("hidden", "");
+    }
   }
 }
 
-function selectCategory(select: HTMLSelectElement, value: string): void {
-  selectValue(select, value);
+function populateCategories(
+  select: HTMLSelectElement,
+  hierarchy: HierarchyNode[],
+  avail: Availability,
+): void {
+  select.innerHTML = "";
+  appendOption(select, "", "All");
+  for (const cat of hierarchy) {
+    if (avail.categories.has(cat.id)) {
+      appendOption(select, cat.id, cat.label);
+    }
+  }
 }
 
 function populateSubcategories(
   select: HTMLSelectElement,
   category: HierarchyNode,
+  avail: Availability,
 ): void {
+  const availSubs = avail.subcategoriesByCategory.get(category.id);
   select.innerHTML = "";
   appendOption(select, "", "All");
   for (const sub of category.children) {
-    appendOption(select, sub.id, sub.label);
+    if (!availSubs || availSubs.has(sub.id)) {
+      appendOption(select, sub.id, sub.label);
+    }
   }
   select.disabled = false;
 }
 
-function populateTags(select: HTMLSelectElement, subcategory: Subcategory): void {
+function populateTags(
+  select: HTMLSelectElement,
+  subcategory: Subcategory,
+  avail: Availability,
+): void {
   select.innerHTML = "";
   appendOption(select, "", "All");
   for (const leaf of subcategory.leaves) {
-    appendOption(select, leaf.id, leaf.label);
+    if (avail.leaves.has(leaf.id)) {
+      appendOption(select, leaf.id, leaf.label);
+    }
   }
   select.disabled = false;
 }

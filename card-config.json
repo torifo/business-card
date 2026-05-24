@@ -70,5 +70,8 @@
   ],
   "repoOverrides": {},
   "excludeRepos": [],
-  "pinnedRepos": []
+  "pinnedRepos": [],
+  "namePrefixTags": {
+    "design-": "design"
+  }
 }

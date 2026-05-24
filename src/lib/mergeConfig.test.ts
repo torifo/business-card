@@ -148,6 +148,33 @@ describe("mergeConfig", () => {
     expect(out.repos[0].tags.sort()).toEqual(["cli", "go"]);
   });
 
+  it("applies namePrefixTags rules across all repos", () => {
+    const config = mkConfig({
+      namePrefixTags: { "design-": "design", "tool-": "tool" },
+    });
+    const out = mergeConfig(
+      [
+        mkRaw("u/design-apparel", { language: "HTML" }),
+        mkRaw("u/tool-cli", { language: "Go" }),
+        mkRaw("u/other-thing", { language: "Go" }),
+      ],
+      config,
+    );
+    const byId = Object.fromEntries(out.repos.map((r) => [r.id, r]));
+    expect(byId["u/design-apparel"].tags).toEqual(["design"]);
+    expect(byId["u/tool-cli"].tags.sort()).toEqual(["go", "tool"]);
+    expect(byId["u/other-thing"].tags).toEqual(["go"]);
+  });
+
+  it("namePrefixTags is unioned with overrides without duplicating", () => {
+    const config = mkConfig({
+      namePrefixTags: { "design-": "design" },
+      repoOverrides: { "u/design-x": { tags: ["design", "ai"] } },
+    });
+    const out = mergeConfig([mkRaw("u/design-x")], config);
+    expect(out.repos[0].tags.sort()).toEqual(["ai", "design"]);
+  });
+
   it("orders results with pinned first, then stars/pushed_at", () => {
     const config = mkConfig({ pinnedRepos: ["u/pinned"] });
     const out = mergeConfig(

@@ -1,7 +1,7 @@
 ---
 /**
  * 個別のリポジトリカード (FR-002)。
- * Repo を受け取り、名前・説明・タグ・スター数・GitHub リンクを表示する。
+ * Repo を受け取り、名前・説明・タグ・GitHub リンクを表示する。
  *
  * data-tags 属性に leaf tag id 列を持たせ、card-filter.ts (Wave 6) からの
  * フィルタリングが DOM クラス操作だけで実現できるようにする。
@@ -23,12 +23,7 @@ const tagAttr = repo.tags.join(",");
   data-tags={tagAttr}
   data-pinned={repo.pinned ? "true" : "false"}
 >
-  <header class="repo-card__header">
-    <h3 class="repo-card__name">{repo.name}</h3>
-    <span class="repo-card__stars" aria-label={`スター数 ${repo.stars}`}>
-      Star: {repo.stars}
-    </span>
-  </header>
+  <h3 class="repo-card__name">{repo.name}</h3>
 
   {
     repo.description && (
@@ -69,26 +64,12 @@ const tagAttr = repo.tags.join(",");
     transition: opacity 300ms ease, transform 300ms ease;
   }
 
-  .repo-card__header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-
   .repo-card__name {
     font-size: 1rem;
     font-weight: 700;
     color: var(--color-text);
     margin: 0;
     word-break: break-word;
-  }
-
-  .repo-card__stars {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
   }
 
   .repo-card__description {
