@@ -13,6 +13,7 @@ import Layout from "../layouts/Layout.astro";
 import CardFront from "../components/CardFront.astro";
 import CardBack from "../components/CardBack.astro";
 import TabSwitcher from "../components/TabSwitcher.astro";
+import LanguageToggle from "../components/LanguageToggle.astro";
 import { fetchRepos } from "../lib/fetchRepos";
 import { mergeConfig } from "../lib/mergeConfig";
 import { computeSunTimes } from "../lib/computeSunTimes";
@@ -56,7 +57,10 @@ const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Dig
 
 <Layout title={pageTitle} description={cardData.profile.tagline}>
   <main class="card-stage">
-    <TabSwitcher initialFace="front" />
+    <div class="card-stage__nav">
+      <TabSwitcher initialFace="front" />
+      <LanguageToggle />
+    </div>
 
     <div class="card" id="card">
       <article class="card-face card-face--front" id="card-face-front" role="tabpanel">

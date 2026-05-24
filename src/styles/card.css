@@ -23,6 +23,15 @@
   perspective: 1200px;
 }
 
+/* TabSwitcher と LanguageToggle を横並びで隣接配置 */
+.card-stage__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .card {
   --rot-x: 0deg;
   --rot-y: 0deg;

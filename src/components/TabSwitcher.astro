@@ -26,7 +26,8 @@ const { initialFace = "front" } = Astro.props;
     aria-controls="card-face-front"
     class:list={["tab-switcher__btn", initialFace === "front" && "is-active"]}
   >
-    Front
+    <span class="i18n-ja">表紙</span>
+    <span class="i18n-en">Front</span>
   </button>
   <button
     type="button"
@@ -36,7 +37,8 @@ const { initialFace = "front" } = Astro.props;
     aria-controls="card-face-back"
     class:list={["tab-switcher__btn", initialFace === "back" && "is-active"]}
   >
-    Back
+    <span class="i18n-ja">裏面</span>
+    <span class="i18n-en">Back</span>
   </button>
 </div>
 

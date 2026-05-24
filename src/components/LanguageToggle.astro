@@ -1,0 +1,47 @@
+---
+/**
+ * 言語切替トグル。ja ↔ en で <html lang> を書き換えるだけのシンプルな実装。
+ * 翻訳テキストは各コンポーネント内で .i18n-ja / .i18n-en の二段スパンで保持し、
+ * CSS の `html[lang="..."]` セレクタで表示を切り替える (global.css)。
+ *
+ * - 表記はクリックで切り替わる「次に切り替わる言語」を見せる:
+ *   - lang=ja のとき: ボタン文字 "EN"
+ *   - lang=en のとき: ボタン文字 "日本語"
+ * - data-no-drag を付けて card-3d.ts のドラッグ起動を抑止する
+ */
+---
+
+<button
+  class="lang-toggle"
+  type="button"
+  data-no-drag
+  data-lang-toggle
+>
+  <span class="visually-hidden i18n-ja">英語に切り替え</span>
+  <span class="visually-hidden i18n-en">Switch to Japanese</span>
+  <span class="i18n-ja" aria-hidden="true">EN</span>
+  <span class="i18n-en" aria-hidden="true">日本語</span>
+</button>
+
+<style>
+  .lang-toggle {
+    padding: 0.35rem 0.7rem;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .lang-toggle:hover,
+  .lang-toggle:focus-visible {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    outline: none;
+  }
+</style>

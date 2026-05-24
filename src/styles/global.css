@@ -1,3 +1,23 @@
 @import "tailwindcss";
 @import "./tokens.css";
 @import "./card.css";
+
+/* i18n: html[lang] で表示するスパンを切り替える。default は ja。 */
+html[lang="ja"] .i18n-en,
+html:not([lang]) .i18n-en {
+  display: none;
+}
+html[lang="en"] .i18n-ja {
+  display: none;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
