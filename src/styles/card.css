@@ -1,13 +1,16 @@
 /*
- * 名刺カード本体のレイアウトと 3D フリップ機構 (FR-003 / NFR Accessibility)。
+ * 名刺カードのレイアウトと 3D 回転機構 (FR-003 + 自由回転拡張)。
  *
  * - .card-stage は perspective を持つ "シーン"。回転はしない
- * - .card は preserve-3d で両面を 3D 空間に配置し、is-flipped で rotateY(180)
+ * - .card は preserve-3d で両面を 3D 空間に配置
+ * - 回転は CSS 変数 --rot-x / --rot-y で表現し、
+ *   tab クリック (snap) と pointer drag の両方が同じ変数を書き換える
+ * - .is-flipped クラスは状態ラベル (aria-selected / inert 管理に使う) で、
+ *   トランスフォームの値そのものは保持しない
  * - .card-face は absolute で重ね、backface-visibility: hidden で
- *   裏側を隠す。overflow はここに置かない (3D レンダリング崩れを避ける)
+ *   裏側を隠す。overflow は置かない (3D 平面化を避ける)
  * - 裏面コンテンツのスクロールは CardBack の内側ラッパで担当
- * - prefers-reduced-motion: reduce が有効なら 3D 回転を無効化し、opacity の
- *   クロスフェードに置換する
+ * - prefers-reduced-motion: reduce 時はクロスフェードに置換
  */
 
 .card-stage {
@@ -21,17 +24,23 @@
 }
 
 .card {
+  --rot-x: 0deg;
+  --rot-y: 0deg;
   width: 100%;
   position: relative;
   aspect-ratio: 91 / 55;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
+  transform: rotateX(var(--rot-x)) rotateY(var(--rot-y));
   transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
+  cursor: grab;
+  touch-action: none; /* ブラウザのスクロールやピンチを抑制し、pointer event をカードが拾う */
 }
 
-.card.is-flipped {
-  transform: rotateY(180deg);
+.card.is-dragging {
+  transition: none;
+  cursor: grabbing;
 }
 
 .card-face {
@@ -42,8 +51,6 @@
   border-radius: var(--radius-lg);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* overflow は置かない: 3D レンダラを 2D 平面化させないため。 */
-  /* border-radius のクリップが必要なときは内部ラッパに clip-path 等で対応する */
 }
 
 .card-face--back {
@@ -65,6 +72,8 @@
     transform: none !important;
     transition: opacity 300ms ease;
     will-change: auto;
+    cursor: default;
+    touch-action: auto;
   }
   .card-face {
     transition: opacity 300ms ease;

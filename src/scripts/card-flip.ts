@@ -1,21 +1,26 @@
 /**
- * カードのタブクリックで表/裏をフリップする (Task 6.3 / FR-003)。
+ * カードのタブクリックで表/裏に snap する (Task 6.3 / FR-003)。
  *
  * - [data-face="front" | "back"] ボタンのクリックを購読
- * - クリックされた面に応じて .card に is-flipped を付け外し
- * - TabSwitcher の aria-selected / .is-active を同期
- * - 3D 回転 (600ms) と prefers-reduced-motion 時のクロスフェード (300ms) は
- *   src/styles/card.css 側で完結する。本スクリプトは class の付替に専念する。
+ * - CSS 変数 --rot-x / --rot-y を書き換え、card.css の transition で
+ *   600ms かけて目標値まで補間する
+ * - .is-flipped クラスはトランスフォーム値ではなく "状態ラベル" として保持し、
+ *   aria-selected / inert / 自由回転スクリプトとの整合に使う
  *
- * card-filter.ts (Task 6.4) など他のモジュールからプログラム的にフリップを
- * 行えるよう `flipTo` を export する。
+ * 自由回転は card-3d.ts が同じ CSS 変数を書き換えることで実現する。
  */
 export function flipTo(face: "front" | "back"): void {
   const card = document.getElementById("card");
   if (!card) return;
+  setRotation(card, 0, face === "back" ? 180 : 0);
   card.classList.toggle("is-flipped", face === "back");
   syncFaceFocusability(face);
   syncTabState(face);
+}
+
+export function setRotation(card: HTMLElement, x: number, y: number): void {
+  card.style.setProperty("--rot-x", `${x}deg`);
+  card.style.setProperty("--rot-y", `${y}deg`);
 }
 
 /**
@@ -49,7 +54,7 @@ function syncTabState(activeFace: "front" | "back"): void {
   }
 }
 
-// 起動時にタブクリック → フリップを配線
+// 起動時にタブクリック → snap を配線
 const tabs = document.querySelectorAll<HTMLButtonElement>("[data-face]");
 for (const tab of tabs) {
   tab.addEventListener("click", () => {

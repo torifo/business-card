@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("prefers-reduced-motion (NFR Accessibility)", () => {
-  test.use({ reducedMotion: "reduce" });
-
   test("flip transition uses opacity crossfade instead of 3D rotation", async ({
     page,
   }) => {
+    // Playwright 1.60 + device emulation の組み合わせで test.use の reducedMotion が
+    // 効かないケースがあるため、context レベルで明示的に emulate する。
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
 
     // 反映前: 3D 回転は使わないので card に rotation が掛かっていない
@@ -27,10 +28,8 @@ test.describe("prefers-reduced-motion (NFR Accessibility)", () => {
     );
     expect(isNoRotation(cardTransformAfter)).toBe(true);
 
-    // 裏面の opacity が 1 になる (クロスフェード適用)
-    const backOpacity = await page.locator("#card-face-back").evaluate(
-      (el) => getComputedStyle(el).opacity,
-    );
-    expect(parseFloat(backOpacity)).toBeGreaterThan(0.9);
+    // 裏面の opacity が 1 になる (クロスフェード適用)。
+    // transition (300ms) があるので Playwright の polling 比較で待つ。
+    await expect(page.locator("#card-face-back")).toHaveCSS("opacity", "1");
   });
 });
