@@ -33,7 +33,7 @@ export interface Profile {
 
 /** プロフィール内の SNS / 連絡先リンク。GitHub のみ FR-001 で必須、それ以外は任意。 */
 export interface ProfileLink {
-  type: "github" | "x" | "qiita" | "linkedin" | "email";
+  type: "github" | "x" | "qiita" | "linkedin" | "email" | "portfolio";
   url: string;
 }
 
