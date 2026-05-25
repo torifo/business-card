@@ -60,6 +60,10 @@
   border-radius: var(--radius-lg);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* 子要素が card 幅に比例して拡大できるよう container query を有効化。
+     全画面化で card 自体が大きくなったとき、内部の文字・アイコン・余白が
+     比例して拡大される (cqi = container inline-size の 1%)。 */
+  container-type: inline-size;
 }
 
 .card-face--back {
@@ -97,8 +101,21 @@
 .card-stage:fullscreen .card,
 .card-stage.is-fullscreen .card {
   /* 91:55 を保ったまま、ビューポート幅・高さの小さい方に合わせて最大化 */
-  width: min(calc(100vw - 2rem), calc((100vh - 80px) * 91 / 55));
-  width: min(calc(100dvw - 2rem), calc((100dvh - 80px) * 91 / 55));
+  width: min(calc(100vw - 2rem), calc((100vh - 60px) * 91 / 55));
+  width: min(calc(100dvw - 2rem), calc((100dvh - 60px) * 91 / 55));
+}
+
+/*
+ * 全画面時は名刺だけを見せたいので TabSwitcher と LanguageToggle は隠す。
+ * FullscreenToggle (退出用) のみ残す。
+ * - フリップは double-tap / ドラッグでも操作可
+ * - 退出は本ボタン または ESC
+ */
+.card-stage:fullscreen .tab-switcher,
+.card-stage.is-fullscreen .tab-switcher,
+.card-stage:fullscreen .lang-toggle,
+.card-stage.is-fullscreen .lang-toggle {
+  display: none;
 }
 
 /* NFR Accessibility: prefers-reduced-motion = reduce ならクロスフェードへ */
