@@ -179,4 +179,4 @@ E2E は preview サーバを `playwright.config.ts` の webServer 設定で自�
 
 ## License
 
-TBD
+TBD(To Be Determined)
