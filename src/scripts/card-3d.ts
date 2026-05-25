@@ -1,17 +1,17 @@
 /**
  * ポインタ (マウス/タッチ) でカードを自由に 3D 回転させる (FR-003 拡張)。
  *
- * - pointerdown でドラッグ開始、移動量を rotateY / rotateX に反映
- * - ドラッグ中は `.is-dragging` で transition を無効化し、追従感を出す
- * - **離した直後はその時点の角速度で回り続け** (慣性)、摩擦で減速してから
- *   近い面 (front=0deg / back=180deg) に snap する
+ * - X 軸クランプを撤去して X/Y どちらも完全自由に回せる (斜めも含む)
+ * - X 感度は Y より高く、縦の card 高さが狭い分を補う
+ * - 離した直後は慣性で回り続け、摩擦で減速してから snap
+ * - snap target は 3D 法線 (cos(X) * cos(Y)) で front/back を判定し、
+ *   X も Y も flat-face (0, 0 or 0, 180) に戻す
+ * - snap 前に nearestEquivalent で累積回転を ±180° 内に正規化し、
+ *   CSS transition の巻き戻し距離を最小化する
  * - select / a / button / [data-face] / [data-no-drag] 上では drag を開始しない
  * - prefers-reduced-motion: reduce ならドラッグも慣性も完全に無効化
- *
- * card-flip.ts の `flipTo` と同じ CSS 変数を共有するので、tab click と
- * pointer drag と慣性回転は同じトランスフォーム経路で動く。
  */
-import { setRotation, flipTo, snapFaceKeepX } from "./card-flip";
+import { setRotation, flipTo } from "./card-flip";
 
 const card = document.getElementById("card");
 
@@ -57,28 +57,21 @@ function initFreeRotation(card: HTMLElement): void {
     momentumId: 0,
   };
 
-  const SENS = 0.4; // px → deg
-  // X 軸 (前後の縦回転) は ±60° だと早期に張り付いて硬く、±180° だと snap で
-  // 1/2 回転の巻き戻しが起き視覚的にギクシャクする。±90° で妥協し、snap の
-  // 巻き戻し距離は最大 90° に抑える。
-  const MAX_TILT_X = 90;
-  const TAP_SLOP = 6; // この距離未満なら "クリック扱い" で snap しない
+  // Y は横幅 (361px ぐらい) に対する追従、X は縦幅 (217px ぐらい) と
+  // 狭いので相対的に多く回す。これで縦方向ドラッグでも素直に flip まで届く。
+  const SENS_Y = 0.4; // 横ドラッグ: px → deg
+  const SENS_X = 0.65; // 縦ドラッグ: px → deg (高めにして "縦の幅が狭い" を補正)
+  const TAP_SLOP = 6;
   const DOUBLE_TAP_MS = 350;
-  const FRAME_MS = 16; // 60fps 想定 (velocity を deg/frame で扱うときの基準)
-  const FRICTION = 0.94; // 各フレームに掛ける減速係数
-  const FLING_MIN_SPEED = 1.5; // deg/frame: これ以上で慣性回転を起動
-  const MOMENTUM_END_SPEED = 0.15; // deg/frame: これ未満になったら snap に移行
-  // 縦方向のドラッグだけでも面を flip できるよう、release 時に |X| がこの閾値を
-  // 超えていたら is-back / is-front を反転させる。"半分弱" = 90°クランプの 50% 前。
-  const X_FLIP_THRESHOLD = 45;
+  const FRAME_MS = 16;
+  const FRICTION = 0.94;
+  const FLING_MIN_SPEED = 1.5;
+  const MOMENTUM_END_SPEED = 0.15;
 
-  // performance.now() はページロードからの経過 ms。初期値 0 だと最初のタップで
-  // 即 double tap 判定になるので -Infinity スタート。
   let lastTapTime = Number.NEGATIVE_INFINITY;
 
   card.addEventListener("pointerdown", (e) => {
     if (!shouldStartDrag(e)) return;
-    // 慣性ループが走っていれば停止
     if (state.momentumId) {
       cancelAnimationFrame(state.momentumId);
       state.momentumId = 0;
@@ -102,20 +95,18 @@ function initFreeRotation(card: HTMLElement): void {
     if (!state.active || e.pointerId !== state.pointerId) return;
     const dx = e.clientX - state.startX;
     const dy = e.clientY - state.startY;
-    state.curRotY = state.baseRotY + dx * SENS;
-    state.curRotX = clamp(state.baseRotX - dy * SENS, -MAX_TILT_X, MAX_TILT_X);
+    // X / Y どちらもクランプ無し: 累積で何回転でも可能
+    state.curRotY = state.baseRotY + dx * SENS_Y;
+    state.curRotX = state.baseRotX - dy * SENS_X;
     setRotation(card, state.curRotX, state.curRotY);
 
-    // 直近サンプルとの差分から角速度 (deg / フレーム) を推定。
-    // 短時間 (5ms 未満) のサンプルは EMA でノイズを抑える。
     const now = performance.now();
     const dt = now - state.lastMoveTime;
     if (dt > 0) {
       const mx = e.clientX - state.lastMoveX;
       const my = e.clientY - state.lastMoveY;
-      const sampleVy = (mx * SENS * FRAME_MS) / dt;
-      const sampleVx = (-my * SENS * FRAME_MS) / dt;
-      // 直近サンプル重視の EMA で慣性発火直前の意図を反映しやすくする
+      const sampleVy = (mx * SENS_Y * FRAME_MS) / dt;
+      const sampleVx = (-my * SENS_X * FRAME_MS) / dt;
       state.velocityY = state.velocityY * 0.3 + sampleVy * 0.7;
       state.velocityX = state.velocityX * 0.3 + sampleVx * 0.7;
     }
@@ -133,7 +124,6 @@ function initFreeRotation(card: HTMLElement): void {
     const dx = e.clientX - state.startX;
     const dy = e.clientY - state.startY;
 
-    // 移動がほぼ無ければ tap として扱う (double tap でフリップ)
     if (Math.hypot(dx, dy) < TAP_SLOP) {
       card.classList.remove("is-dragging");
       const now = performance.now();
@@ -149,8 +139,6 @@ function initFreeRotation(card: HTMLElement): void {
       return;
     }
 
-    // 慣性に乗せるほどの勢いがあれば fling ループへ。
-    // 速度が弱ければそのまま近い面に snap する。
     const speed = Math.hypot(state.velocityX, state.velocityY);
     lastTapTime = Number.NEGATIVE_INFINITY;
     if (speed >= FLING_MIN_SPEED) {
@@ -163,10 +151,6 @@ function initFreeRotation(card: HTMLElement): void {
   card.addEventListener("pointerup", release);
   card.addEventListener("pointercancel", release);
 
-  /**
-   * 慣性ループ: 直近のドラッグ速度を初期値に、毎フレーム摩擦で減速しながら
-   * カードを回転させる。十分減速したら近い面に snap する。
-   */
   function runMomentum(): void {
     let vx = state.velocityX;
     let vy = state.velocityY;
@@ -174,12 +158,9 @@ function initFreeRotation(card: HTMLElement): void {
     function step(): void {
       vx *= FRICTION;
       vy *= FRICTION;
-      const projectedX = state.curRotX + vx;
-      const nextX = clamp(projectedX, -MAX_TILT_X, MAX_TILT_X);
-      // クランプに当たったら X 方向の慣性を止める (壁に張り付く感を回避)
-      if (nextX !== projectedX) vx = 0;
-      state.curRotX = nextX;
-      state.curRotY = state.curRotY + vy;
+      // X / Y どちらもクランプ無しで自由に減速回転
+      state.curRotX += vx;
+      state.curRotY += vy;
       setRotation(card, state.curRotX, state.curRotY);
 
       const remaining = Math.hypot(vx, vy);
@@ -195,30 +176,33 @@ function initFreeRotation(card: HTMLElement): void {
   }
 
   /**
-   * 現在角に最も近い面に snap し、is-dragging を外して CSS transition で滑らせる。
+   * 現在の (X, Y) から見えている面 (front/back) を決定し、最短経路で
+   * flat-face position (X=0, Y=0 or 180) に snap する。
    *
-   * 慣性で複数回転した状態で flipTo (0 or 180 固定) を呼ぶと、CSS transition が
-   * 「数百度の巻き戻し」を視覚的に描いてしまう。これを避けるため、is-dragging が
-   * 残っているうち (= transition なし) に現在角をターゲット近傍 (±180°) に正規化し、
-   * その後 transition を解禁してから flipTo に snap させる。
+   * front/back 判定は 3D 法線の Z 成分 (cos(X) * cos(Y)) で行うので
+   * X 軸だけの傾き、Y 軸だけの回転、斜めの組合せ、いずれも自然に処理される。
    */
   function finishWithSnap(): void {
-    const norm = ((state.curRotY % 360) + 360) % 360;
-    let isBack = norm >= 90 && norm < 270;
-    // 縦方向の傾きも flip シグナルとして扱う: |X| が閾値を超えていれば面を反転
-    // (X 単独の縦回転でも back/front 切替を発生させる)
-    if (Math.abs(state.curRotX) >= X_FLIP_THRESHOLD) {
-      isBack = !isBack;
-    }
+    const isBack = isBackVisible(state.curRotX, state.curRotY);
     const targetY = isBack ? 180 : 0;
+
+    // 累積回転を ±180° 範囲に正規化 (見た目同じ、transition 距離だけ最小化)
+    state.curRotX = nearestEquivalent(state.curRotX, 0);
     state.curRotY = nearestEquivalent(state.curRotY, targetY);
     setRotation(card, state.curRotX, state.curRotY);
 
     card.classList.remove("is-dragging");
+    state.curRotX = 0;
     state.curRotY = targetY;
-    // X は release した角度を保持し、Y だけ面に向ける (snap-to-0 の巻き戻しを回避)
-    snapFaceKeepX(isBack ? "back" : "front", state.curRotX, targetY);
+    flipTo(isBack ? "back" : "front");
   }
+}
+
+/** front normal の Z 成分が負なら back が見えている (cos(X) * cos(Y) < 0) */
+function isBackVisible(rotX: number, rotY: number): boolean {
+  const cx = Math.cos((rotX * Math.PI) / 180);
+  const cy = Math.cos((rotY * Math.PI) / 180);
+  return cx * cy < 0;
 }
 
 /** value を target ± 180° 範囲内に正規化 (見た目は同じだが数値差が最小化される) */
@@ -239,8 +223,4 @@ function shouldStartDrag(e: PointerEvent): boolean {
     return false;
   }
   return true;
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(Math.max(v, lo), hi);
 }
