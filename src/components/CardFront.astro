@@ -105,9 +105,10 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   .card-front {
     height: 100%;
     display: grid;
-    grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
-    gap: 4cqi;
-    padding: 4.5cqi;
+    /* アバター列を細めて文字列に幅を譲る (38% → 33%) */
+    grid-template-columns: minmax(0, 33%) minmax(0, 1fr);
+    gap: 5cqi;
+    padding: 4cqi;
     align-items: center;
     box-sizing: border-box;
   }
@@ -120,7 +121,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
 
   .card-front__avatar {
     width: 100%;
-    max-width: 37cqi;
+    max-width: 33cqi;
     aspect-ratio: 1 / 1;
     height: auto;
     border-radius: 50%;
@@ -132,18 +133,21 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   .card-front__info-col {
     display: flex;
     flex-direction: column;
-    gap: 1.8cqi;
+    gap: 2.8cqi;
     min-width: 0;
   }
 
   .card-front__names {
     display: flex;
     flex-direction: column;
-    gap: 0.3cqi;
+    gap: 0.6cqi;
   }
 
+  /* フォントサイズを全体的に bump up: name-jp 5→6.8, name-en 2.8→3.6,
+     title 3.2→4, tagline 2.6→3.3。card 幅 358px の場合 name-jp は
+     17.9px → 24.3px と一回り大きくなる。 */
   .card-front__name-jp {
-    font-size: 5cqi;
+    font-size: 6.8cqi;
     font-weight: 700;
     color: var(--color-text);
     margin: 0;
@@ -152,7 +156,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   }
 
   .card-front__name-en {
-    font-size: 2.8cqi;
+    font-size: 4.8cqi;
     color: var(--color-text-muted);
     margin: 0;
     letter-spacing: 0.08em;
@@ -160,7 +164,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   }
 
   .card-front__title {
-    font-size: 3.2cqi;
+    font-size: 4cqi;
     color: var(--color-accent);
     font-weight: 600;
     margin: 0;
@@ -168,7 +172,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   }
 
   .card-front__tagline {
-    font-size: 2.6cqi;
+    font-size: 3.3cqi;
     color: var(--color-text-muted);
     margin: 0;
     line-height: 1.4;
@@ -181,9 +185,9 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   .card-front__links {
     list-style: none;
     padding: 0;
-    margin: 1cqi 0 0;
+    margin: 1.5cqi 0 0;
     display: flex;
-    gap: 1.5cqi;
+    gap: 2cqi;
     flex-wrap: wrap;
   }
 
@@ -191,15 +195,15 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 6cqi;
-    height: 6cqi;
-    padding: 0 2cqi;
+    min-width: 8.5cqi;
+    height: 8.5cqi;
+    padding: 0 2.5cqi;
     border-radius: var(--radius-md);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     color: var(--color-text);
     text-decoration: none;
-    font-size: 2.6cqi;
+    font-size: 3.4cqi;
     font-weight: 600;
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
@@ -214,12 +218,12 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   /* アイコン用のリンクは正方形にしてラベル分のパディングを除く */
   .card-front__link--icon {
     padding: 0;
-    width: 6cqi;
+    width: 8.5cqi;
   }
 
   .card-front__icon {
-    width: 3.4cqi;
-    height: 3.4cqi;
+    width: 5cqi;
+    height: 5cqi;
     display: block;
   }
 </style>
