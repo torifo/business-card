@@ -58,7 +58,10 @@ function initFreeRotation(card: HTMLElement): void {
   };
 
   const SENS = 0.4; // px → deg
-  const MAX_TILT_X = 60; // X 軸 (前後) は上下に倒れすぎないよう制限
+  // X 軸 (前後の縦回転) はクランプを実質無効化し、Y 軸 (横回転) と同じ
+  // 自由度で回せるようにする。クランプ ±60° だと早期に張り付いて硬い感触に
+  // なるという指摘を受けて 180° に拡張 (= ほぼ無制限)。
+  const MAX_TILT_X = 180;
   const TAP_SLOP = 6; // この距離未満なら "クリック扱い" で snap しない
   const DOUBLE_TAP_MS = 350;
   const FRAME_MS = 16; // 60fps 想定 (velocity を deg/frame で扱うときの基準)
@@ -184,15 +187,33 @@ function initFreeRotation(card: HTMLElement): void {
     state.momentumId = requestAnimationFrame(step);
   }
 
-  /** 現在角に最も近い面に snap し、is-dragging を外して CSS transition で滑らせる */
+  /**
+   * 現在角に最も近い面に snap し、is-dragging を外して CSS transition で滑らせる。
+   *
+   * 慣性で複数回転した状態で flipTo (0 or 180 固定) を呼ぶと、CSS transition が
+   * 「数百度の巻き戻し」を視覚的に描いてしまう。これを避けるため、is-dragging が
+   * 残っているうち (= transition なし) に現在角をターゲット近傍 (±180°) に正規化し、
+   * その後 transition を解禁してから flipTo に snap させる。
+   */
   function finishWithSnap(): void {
-    card.classList.remove("is-dragging");
     const norm = ((state.curRotY % 360) + 360) % 360;
     const isBack = norm >= 90 && norm < 270;
+    const targetY = isBack ? 180 : 0;
+    state.curRotY = nearestEquivalent(state.curRotY, targetY);
+    setRotation(card, state.curRotX, state.curRotY);
+
+    card.classList.remove("is-dragging");
     state.curRotX = 0;
-    state.curRotY = isBack ? 180 : 0;
+    state.curRotY = targetY;
     flipTo(isBack ? "back" : "front");
   }
+}
+
+/** value を target ± 180° 範囲内に正規化 (見た目は同じだが数値差が最小化される) */
+function nearestEquivalent(value: number, target: number): number {
+  const diff = value - target;
+  const wrappedDiff = (((diff + 180) % 360) + 360) % 360 - 180;
+  return target + wrappedDiff;
 }
 
 function shouldStartDrag(e: PointerEvent): boolean {
