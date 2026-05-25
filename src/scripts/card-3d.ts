@@ -37,6 +37,8 @@ interface DragState {
   velocityY: number;
   /** 慣性ループの requestAnimationFrame id (0 = 停止中) */
   momentumId: number;
+  /** drag 開始時点の X 感度 (裏面時は低減) */
+  sensX: number;
 }
 
 function initFreeRotation(card: HTMLElement): void {
@@ -55,12 +57,15 @@ function initFreeRotation(card: HTMLElement): void {
     velocityX: 0,
     velocityY: 0,
     momentumId: 0,
+    sensX: 0,
   };
 
   // Y は横幅 (361px ぐらい) に対する追従、X は縦幅 (217px ぐらい) と
   // 狭いので相対的に多く回す。これで縦方向ドラッグでも素直に flip まで届く。
   const SENS_Y = 0.4; // 横ドラッグ: px → deg
   const SENS_X = 0.65; // 縦ドラッグ: px → deg (高めにして "縦の幅が狭い" を補正)
+  // 裏面表示中は縦スクロールと干渉しないよう X 感度を大幅に下げる
+  const BACK_X_FACTOR = 0.2;
   const TAP_SLOP = 6;
   const DOUBLE_TAP_MS = 350;
   const FRAME_MS = 16;
@@ -87,6 +92,7 @@ function initFreeRotation(card: HTMLElement): void {
     state.lastMoveY = e.clientY;
     state.velocityX = 0;
     state.velocityY = 0;
+    state.sensX = card.classList.contains("is-flipped") ? SENS_X * BACK_X_FACTOR : SENS_X;
     card.classList.add("is-dragging");
     card.setPointerCapture(e.pointerId);
   });
@@ -97,7 +103,7 @@ function initFreeRotation(card: HTMLElement): void {
     const dy = e.clientY - state.startY;
     // X / Y どちらもクランプ無し: 累積で何回転でも可能
     state.curRotY = state.baseRotY + dx * SENS_Y;
-    state.curRotX = state.baseRotX - dy * SENS_X;
+    state.curRotX = state.baseRotX - dy * state.sensX;
     setRotation(card, state.curRotX, state.curRotY);
 
     const now = performance.now();
@@ -106,7 +112,7 @@ function initFreeRotation(card: HTMLElement): void {
       const mx = e.clientX - state.lastMoveX;
       const my = e.clientY - state.lastMoveY;
       const sampleVy = (mx * SENS_Y * FRAME_MS) / dt;
-      const sampleVx = (-my * SENS_X * FRAME_MS) / dt;
+      const sampleVx = (-my * state.sensX * FRAME_MS) / dt;
       state.velocityY = state.velocityY * 0.3 + sampleVy * 0.7;
       state.velocityX = state.velocityX * 0.3 + sampleVx * 0.7;
     }
