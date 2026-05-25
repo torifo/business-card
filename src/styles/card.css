@@ -76,35 +76,29 @@
 }
 
 /*
- * 横向きモバイル: 画面いっぱいにカードを配置する。
- * orientation: landscape かつ max-height で「スマホ横持ち」相当を狙う
- * (タブレットや PC で誤発火しないように max-height: 500px を併用)。
+ * 全画面名刺モード: FullscreenToggle のクリックで card-stage を viewport
+ * いっぱいに広げる。Fullscreen API 対応ブラウザでは :fullscreen 擬似クラスで、
+ * 非対応では JS が付与する .is-fullscreen クラスで同じ見た目になる。
  */
-@media (orientation: landscape) and (max-height: 500px) {
-  body {
-    overflow: hidden; /* ページ全体は横向き時 1 画面で完結。スクロールは裏面内部にだけ任せる */
-  }
+.card-stage:fullscreen,
+.card-stage.is-fullscreen {
+  max-width: none;
+  width: 100vw;
+  width: 100dvw;
+  height: 100vh;
+  height: 100dvh;
+  padding: 0.75rem 1rem;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-bg);
+  box-sizing: border-box;
+}
 
-  .card-stage {
-    max-width: none;
-    width: 100vw;
-    width: 100dvw;
-    min-height: 100vh;
-    min-height: 100dvh;
-    padding: 0.25rem 0.5rem;
-    justify-content: center;
-    gap: 0.25rem;
-  }
-
-  .card-stage__nav {
-    margin-bottom: 0.1rem;
-  }
-
-  .card {
-    /* ビューポート幅と高さの両方の制約のうち、小さい方に合わせて 91:55 を維持しつつ拡大 */
-    width: min(calc(100vw - 1rem), calc((100vh - 60px) * 91 / 55));
-    width: min(calc(100dvw - 1rem), calc((100dvh - 60px) * 91 / 55));
-  }
+.card-stage:fullscreen .card,
+.card-stage.is-fullscreen .card {
+  /* 91:55 を保ったまま、ビューポート幅・高さの小さい方に合わせて最大化 */
+  width: min(calc(100vw - 2rem), calc((100vh - 80px) * 91 / 55));
+  width: min(calc(100dvw - 2rem), calc((100dvh - 80px) * 91 / 55));
 }
 
 /* NFR Accessibility: prefers-reduced-motion = reduce ならクロスフェードへ */

@@ -1,0 +1,91 @@
+---
+/**
+ * 全画面名刺モード切替ボタン。Fullscreen API 対応ブラウザでは
+ * card-stage を requestFullscreen で本物の全画面に、非対応では
+ * .is-fullscreen クラスで viewport いっぱいの CSS 全画面にフォールバック。
+ *
+ * 配置は LanguageToggle と同じく card-stage__nav 内 (タブの右隣)。
+ * data-no-drag で card-3d.ts のドラッグ起動を抑止する。
+ */
+---
+
+<button
+  class="fullscreen-toggle"
+  type="button"
+  data-no-drag
+  data-fullscreen-toggle
+>
+  <span class="visually-hidden i18n-ja">全画面名刺の切替</span>
+  <span class="visually-hidden i18n-en">Toggle fullscreen card</span>
+  <svg
+    class="fullscreen-toggle__icon fullscreen-toggle__icon--enter"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+  </svg>
+  <svg
+    class="fullscreen-toggle__icon fullscreen-toggle__icon--exit"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" />
+  </svg>
+</button>
+
+<style>
+  .fullscreen-toggle {
+    width: 1.85rem;
+    height: 1.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .fullscreen-toggle:hover,
+  .fullscreen-toggle:focus-visible {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    outline: none;
+  }
+
+  .fullscreen-toggle__icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    display: block;
+  }
+
+  /* デフォルトは exit アイコンを隠して enter (全画面化) を見せる */
+  .fullscreen-toggle__icon--exit {
+    display: none;
+  }
+
+  /* 全画面モード中は exit (戻る) アイコンに切替 */
+  :global(.card-stage:fullscreen) .fullscreen-toggle__icon--enter,
+  :global(.card-stage.is-fullscreen) .fullscreen-toggle__icon--enter {
+    display: none;
+  }
+  :global(.card-stage:fullscreen) .fullscreen-toggle__icon--exit,
+  :global(.card-stage.is-fullscreen) .fullscreen-toggle__icon--exit {
+    display: block;
+  }
+</style>

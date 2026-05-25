@@ -14,6 +14,7 @@ import CardFront from "../components/CardFront.astro";
 import CardBack from "../components/CardBack.astro";
 import TabSwitcher from "../components/TabSwitcher.astro";
 import LanguageToggle from "../components/LanguageToggle.astro";
+import FullscreenToggle from "../components/FullscreenToggle.astro";
 import { fetchRepos } from "../lib/fetchRepos";
 import { mergeConfig } from "../lib/mergeConfig";
 import { computeSunTimes } from "../lib/computeSunTimes";
@@ -60,6 +61,7 @@ const pageTitle = `${cardData.profile.name} (${cardData.profile.nameEn}) — Dig
     <div class="card-stage__nav">
       <TabSwitcher initialFace="front" />
       <LanguageToggle />
+      <FullscreenToggle />
     </div>
 
     <div class="card" id="card">
