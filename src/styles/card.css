@@ -75,6 +75,38 @@
   border-radius: inherit;
 }
 
+/*
+ * 横向きモバイル: 画面いっぱいにカードを配置する。
+ * orientation: landscape かつ max-height で「スマホ横持ち」相当を狙う
+ * (タブレットや PC で誤発火しないように max-height: 500px を併用)。
+ */
+@media (orientation: landscape) and (max-height: 500px) {
+  body {
+    overflow: hidden; /* ページ全体は横向き時 1 画面で完結。スクロールは裏面内部にだけ任せる */
+  }
+
+  .card-stage {
+    max-width: none;
+    width: 100vw;
+    width: 100dvw;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 0.25rem 0.5rem;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .card-stage__nav {
+    margin-bottom: 0.1rem;
+  }
+
+  .card {
+    /* ビューポート幅と高さの両方の制約のうち、小さい方に合わせて 91:55 を維持しつつ拡大 */
+    width: min(calc(100vw - 1rem), calc((100vh - 60px) * 91 / 55));
+    width: min(calc(100dvw - 1rem), calc((100dvh - 60px) * 91 / 55));
+  }
+}
+
 /* NFR Accessibility: prefers-reduced-motion = reduce ならクロスフェードへ */
 @media (prefers-reduced-motion: reduce) {
   .card {

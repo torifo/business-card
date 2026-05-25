@@ -107,10 +107,13 @@ const { hierarchy, repos } = Astro.props;
     position: sticky;
     top: 0;
     z-index: 2;
+    /* 常時 横並び (3 連 select)。狭い画面でもフィルタ枠が肥大化しないよう
+       縦積み breakpoint は廃止し、内部要素を flex shrink で詰める */
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.35rem;
+    padding: 0.4rem 0.6rem;
     /* card-face と同じ色で不透明にして、下に流れた repo card が透けないようにする */
     background: var(--color-bg);
     box-shadow: 0 1px 0 var(--color-border), 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -119,28 +122,34 @@ const { hierarchy, repos } = Astro.props;
   }
 
   .card-back__filter {
+    flex: 1 1 0;
+    min-width: 0; /* flex item の text-overflow を効かせる */
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.1rem;
   }
 
   .card-back__filter-label {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .card-back__select {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: 0.3rem 0.45rem;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     color: var(--color-text);
-    font-size: 0.9rem;
+    font-size: 0.78rem;
     cursor: pointer;
     transition: border-color 0.2s ease;
+    /* select の固定 min-width をリセットしてカード幅で 3 連入るようにする */
+    min-width: 0;
   }
 
   .card-back__select:focus-visible {
