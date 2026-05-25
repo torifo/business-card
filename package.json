@@ -11,7 +11,8 @@
     "check": "astro check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "qr": "tsx scripts/generate-qrs.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",

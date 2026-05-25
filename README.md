@@ -158,6 +158,34 @@ docker run --rm -p 8080:80 business-card:dev
 # http://localhost:8080/
 ```
 
+## QR Codes (Galaxy modes & routines)
+
+`?target=<tag>` の URL を埋め込んだ tag 別 QR を `public/qr/` に一括生成できる。Galaxy の **モードとルーチン** にそれぞれ別の QR 画像を割り当てて、相手の興味に応じて 1 タップで該当 QR を全画面表示する運用を想定している。
+
+```bash
+# hierarchy 全 leaf 分 + card.png + portfolio.png を生成
+npm run qr
+
+# 別ドメインで生成したい場合
+QR_BASE_URL=https://example.com npm run qr
+```
+
+生成されるファイル:
+
+- `public/qr/card.png` — 素のカード URL (`?target=` 無し)
+- `public/qr/portfolio.png` — `card-config.json` の `profile.links` で `type: "portfolio"` のリンク先
+- `public/qr/target-<leaf-id>.png` — 各 leaf に対応 (例: `target-go.png` → `/?target=go`)
+
+### Galaxy ルーチン側の最小手順
+
+> 詳細は One UI のバージョンで変わるため概要のみ。
+
+1. 上記 QR 画像をギャラリーアプリに転送 (Quick Share / Google Drive 等)
+2. **設定 > モードとルーチン > ルーチン > +** で新規ルーチン作成
+3. 開始条件: アイコンタップ / クイックパネルから / ジェスチャー / NFC タグ 等から選択
+4. 実行内容: **ギャラリーで開く** または **画像を全画面表示** で対象 QR を指定
+5. 利き手に近いホームショートカットなどに置くと素早く呼び出せる
+
 ## Testing
 
 ```bash
