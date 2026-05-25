@@ -11,7 +11,7 @@
  * card-flip.ts の `flipTo` と同じ CSS 変数を共有するので、tab click と
  * pointer drag と慣性回転は同じトランスフォーム経路で動く。
  */
-import { setRotation, flipTo } from "./card-flip";
+import { setRotation, flipTo, snapFaceKeepX } from "./card-flip";
 
 const card = document.getElementById("card");
 
@@ -58,16 +58,19 @@ function initFreeRotation(card: HTMLElement): void {
   };
 
   const SENS = 0.4; // px → deg
-  // X 軸 (前後の縦回転) はクランプを実質無効化し、Y 軸 (横回転) と同じ
-  // 自由度で回せるようにする。クランプ ±60° だと早期に張り付いて硬い感触に
-  // なるという指摘を受けて 180° に拡張 (= ほぼ無制限)。
-  const MAX_TILT_X = 180;
+  // X 軸 (前後の縦回転) は ±60° だと早期に張り付いて硬く、±180° だと snap で
+  // 1/2 回転の巻き戻しが起き視覚的にギクシャクする。±90° で妥協し、snap の
+  // 巻き戻し距離は最大 90° に抑える。
+  const MAX_TILT_X = 90;
   const TAP_SLOP = 6; // この距離未満なら "クリック扱い" で snap しない
   const DOUBLE_TAP_MS = 350;
   const FRAME_MS = 16; // 60fps 想定 (velocity を deg/frame で扱うときの基準)
   const FRICTION = 0.94; // 各フレームに掛ける減速係数
   const FLING_MIN_SPEED = 1.5; // deg/frame: これ以上で慣性回転を起動
   const MOMENTUM_END_SPEED = 0.15; // deg/frame: これ未満になったら snap に移行
+  // 縦方向のドラッグだけでも面を flip できるよう、release 時に |X| がこの閾値を
+  // 超えていたら is-back / is-front を反転させる。"半分弱" = 90°クランプの 50% 前。
+  const X_FLIP_THRESHOLD = 45;
 
   // performance.now() はページロードからの経過 ms。初期値 0 だと最初のタップで
   // 即 double tap 判定になるので -Infinity スタート。
@@ -171,7 +174,11 @@ function initFreeRotation(card: HTMLElement): void {
     function step(): void {
       vx *= FRICTION;
       vy *= FRICTION;
-      state.curRotX = clamp(state.curRotX + vx, -MAX_TILT_X, MAX_TILT_X);
+      const projectedX = state.curRotX + vx;
+      const nextX = clamp(projectedX, -MAX_TILT_X, MAX_TILT_X);
+      // クランプに当たったら X 方向の慣性を止める (壁に張り付く感を回避)
+      if (nextX !== projectedX) vx = 0;
+      state.curRotX = nextX;
       state.curRotY = state.curRotY + vy;
       setRotation(card, state.curRotX, state.curRotY);
 
@@ -197,15 +204,20 @@ function initFreeRotation(card: HTMLElement): void {
    */
   function finishWithSnap(): void {
     const norm = ((state.curRotY % 360) + 360) % 360;
-    const isBack = norm >= 90 && norm < 270;
+    let isBack = norm >= 90 && norm < 270;
+    // 縦方向の傾きも flip シグナルとして扱う: |X| が閾値を超えていれば面を反転
+    // (X 単独の縦回転でも back/front 切替を発生させる)
+    if (Math.abs(state.curRotX) >= X_FLIP_THRESHOLD) {
+      isBack = !isBack;
+    }
     const targetY = isBack ? 180 : 0;
     state.curRotY = nearestEquivalent(state.curRotY, targetY);
     setRotation(card, state.curRotX, state.curRotY);
 
     card.classList.remove("is-dragging");
-    state.curRotX = 0;
     state.curRotY = targetY;
-    flipTo(isBack ? "back" : "front");
+    // X は release した角度を保持し、Y だけ面に向ける (snap-to-0 の巻き戻しを回避)
+    snapFaceKeepX(isBack ? "back" : "front", state.curRotX, targetY);
   }
 }
 

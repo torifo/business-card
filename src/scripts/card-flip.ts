@@ -12,15 +12,35 @@
 export function flipTo(face: "front" | "back"): void {
   const card = document.getElementById("card");
   if (!card) return;
+  // タブクリック経路は X を 0 にリセットしてフラットに揃える
   setRotation(card, 0, face === "back" ? 180 : 0);
-  card.classList.toggle("is-flipped", face === "back");
-  syncFaceFocusability(face);
-  syncTabState(face);
+  setFaceState(face);
+}
+
+/**
+ * X の回転を保ったまま Y だけを target に向ける snap (card-3d.ts のドラッグ
+ * release 用)。X が 0 に巻き戻る違和感を避けるため、ドラッグ系のジェスチャは
+ * 必ずこちらを使う。
+ */
+export function snapFaceKeepX(face: "front" | "back", x: number, y: number): void {
+  const card = document.getElementById("card");
+  if (!card) return;
+  setRotation(card, x, y);
+  setFaceState(face);
 }
 
 export function setRotation(card: HTMLElement, x: number, y: number): void {
   card.style.setProperty("--rot-x", `${x}deg`);
   card.style.setProperty("--rot-y", `${y}deg`);
+}
+
+/** is-flipped / aria-selected / inert を target の面に合わせるだけのヘルパ */
+export function setFaceState(face: "front" | "back"): void {
+  const card = document.getElementById("card");
+  if (!card) return;
+  card.classList.toggle("is-flipped", face === "back");
+  syncFaceFocusability(face);
+  syncTabState(face);
 }
 
 /**
