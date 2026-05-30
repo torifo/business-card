@@ -20,6 +20,7 @@ import { mergeConfig } from "../lib/mergeConfig";
 import { computeSunTimes } from "../lib/computeSunTimes";
 import cardConfigRaw from "../../card-config.json" with { type: "json" };
 import type { CardConfig, CardData } from "../types/card";
+import QRCode from "qrcode";
 
 const config = cardConfigRaw as unknown as CardConfig;
 
@@ -53,6 +54,13 @@ const cardData: CardData = {
   geo: config.geo,
 };
 
+const cardUrl = import.meta.env.CARD_URL ?? "https://business-card.riumu.net";
+const qrSvg: string = await QRCode.toString(cardUrl, {
+  type: "svg",
+  errorCorrectionLevel: "H",
+  margin: 1,
+});
+
 const pageTitle = `Digital Business Card — ${cardData.profile.name} (${cardData.profile.nameEn})`;
 ---
 
@@ -66,7 +74,7 @@ const pageTitle = `Digital Business Card — ${cardData.profile.name} (${cardDat
 
     <div class="card" id="card">
       <article class="card-face card-face--front" id="card-face-front" role="tabpanel">
-        <CardFront profile={cardData.profile} />
+        <CardFront profile={cardData.profile} qrSvg={qrSvg} />
       </article>
       <article class="card-face card-face--back" id="card-face-back" role="tabpanel" aria-hidden="true" inert>
         <CardBack hierarchy={cardData.hierarchy} repos={cardData.repos} />
