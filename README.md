@@ -14,8 +14,10 @@ QR から相手の興味に合わせた tag で初期出し分けし、対面で
 ### 操作
 - 名刺の表/裏フリップ UI (CSS 3D rotateY, 600ms, `prefers-reduced-motion` ON 時はクロスフェードに自動切替)
 - カードを **ドラッグして自由に 3D 回転**（マウス・タッチ両対応）、離すと近い面に snap
+- 裏面表示中は **縦方向の回転感度を低減**（リポジトリ一覧の縦スクロールを優先）
 - カード本体を **2 連続タップ/ダブルクリックで表↔裏トグル**（350ms 以内）
 - 表/裏タブ（既定: 表紙 / 裏面）クリックで snap
+- **全画面トグルボタン**で名刺を viewport いっぱいに拡大（Fullscreen API + `.is-fullscreen` フォールバック、container queries でコンテンツも比例拡大）
 - `?target=<tag>` の URL パラメータで裏面初期化 + tag フィルタ (Galaxy のモードルーチン等から 1 タップ起動)、適用後は URL を `/` に書き換え
 
 ### 言語切替
@@ -47,6 +49,7 @@ QR から相手の興味に合わせた tag で初期出し分けし、対面で
 - TypeScript strict
 - [SunCalc](https://github.com/mourner/suncalc) (ビルド時の日の出/日没計算)
 - Vanilla TypeScript (クライアント JS は < 15KB gzip 目標)
+- CSS Container Queries (`cqi` 単位でカードサイズに比例した内部スケーリング)
 - Vitest (unit テスト)
 
 ## Quick Start
@@ -79,7 +82,7 @@ business-card/
 ├── public/
 │   ├── favicon.png        円形マスク付き favicon (256×256, アバターから生成)
 │   ├── images/avatar.png  アバター本体 (775×773 PNG, CSS で circular クロップ)
-│   └── qr/{card,portfolio}.png  QR コード (512×512px, level H)
+│   └── qr/{card,portfolio,target-*}.png  QR コード (512×512px, level H, leaf 数だけ target-* を生成)
 ├── src/
 │   ├── pages/index.astro         ビルド時統合のエントリ
 │   ├── layouts/Layout.astro      <head> で全クライアント JS を hoist
@@ -88,7 +91,8 @@ business-card/
 │   │   ├── CardBack.astro        裏面 (sticky フィルタ + repo グリッド)
 │   │   ├── RepoCard.astro        リポジトリカード (name / description / tags / link)
 │   │   ├── TabSwitcher.astro     表紙 / 裏面 切替タブ (i18n 対応)
-│   │   └── LanguageToggle.astro  EN / 日本語 トグルピル
+│   │   ├── LanguageToggle.astro  EN / 日本語 トグルピル
+│   │   └── FullscreenToggle.astro 全画面トグル (拡大/縮小アイコンボタン)
 │   ├── lib/
 │   │   ├── fetchRepos.ts         GitHub API + ローカル dev キャッシュ
 │   │   ├── mergeConfig.ts        card-config を生データに適用 (namePrefixTags 含む)
@@ -99,7 +103,8 @@ business-card/
 │   │   ├── card-flip.ts          表/裏フリップ snap (タブクリック)
 │   │   ├── card-3d.ts            自由 3D ドラッグ + ダブルタップトグル
 │   │   ├── card-filter.ts        URL param + ドロップダウン制御 (availability フィルタ)
-│   │   └── lang.ts               言語切替 (<html lang> トグル)
+│   │   ├── lang.ts               言語切替 (<html lang> トグル)
+│   │   └── fullscreen.ts         全画面トグル (Fullscreen API + クラスフォールバック)
 │   ├── styles/
 │   │   ├── global.css            tailwindcss / tokens / card / i18n CSS のエントリ
 │   │   ├── tokens.css            セマンティック CSS 変数 (light/night)
