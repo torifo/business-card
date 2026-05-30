@@ -110,6 +110,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
     display: grid;
     /* アバター列を細めて文字列に幅を譲る (38% → 33%) */
     grid-template-columns: minmax(0, 33%) minmax(0, 1fr);
+    grid-template-rows: 1fr;
     gap: 5cqi;
     padding: 4cqi;
     align-items: center;
@@ -239,6 +240,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
     right: 2.5cqi;
     width: 13cqi;
     height: 13cqi;
+    /* white required for QR scanner contrast — intentionally not themed */
     background: white;
     border-radius: 1.5cqi;
     padding: 1cqi;
