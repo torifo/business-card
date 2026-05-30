@@ -29,3 +29,6 @@ playwright/.cache/
 
 # Claude Code local config
 .claude/
+
+# Superpowers brainstorm sessions
+.superpowers/
