@@ -11,9 +11,10 @@ import type { Profile, ProfileLink } from "../types/card";
 
 interface Props {
   profile: Profile;
+  qrSvg: string;
 }
 
-const { profile } = Astro.props;
+const { profile, qrSvg } = Astro.props;
 
 const LINK_LABEL: Record<ProfileLink["type"], string> = {
   github: "GH",
@@ -94,6 +95,8 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
       }
     </ul>
   </div>
+
+  <div class="card-front__qr" set:html={qrSvg} aria-hidden="true" />
 </section>
 
 <style>
@@ -111,6 +114,7 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
     padding: 4cqi;
     align-items: center;
     box-sizing: border-box;
+    position: relative;
   }
 
   .card-front__avatar-col {
@@ -224,6 +228,24 @@ const LINK_LABEL: Record<ProfileLink["type"], string> = {
   .card-front__icon {
     width: 5cqi;
     height: 5cqi;
+    display: block;
+  }
+
+  .card-front__qr {
+    position: absolute;
+    bottom: 2.5cqi;
+    right: 2.5cqi;
+    width: 13cqi;
+    height: 13cqi;
+    background: white;
+    border-radius: 1.5cqi;
+    padding: 1cqi;
+    box-sizing: border-box;
+  }
+
+  .card-front__qr svg {
+    width: 100%;
+    height: 100%;
     display: block;
   }
 </style>

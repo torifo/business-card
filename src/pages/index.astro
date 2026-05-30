@@ -55,7 +55,7 @@ const cardData: CardData = {
 };
 
 const cardUrl = import.meta.env.CARD_URL ?? "https://business-card.riumu.net";
-const qrSvg: string = await QRCode.toString(cardUrl, {
+const qrSvg = await QRCode.toString(cardUrl, {
   type: "svg",
   errorCorrectionLevel: "H",
   margin: 1,
