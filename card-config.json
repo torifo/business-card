@@ -19,59 +19,87 @@
   },
   "hierarchy": [
     {
-      "id": "skill",
-      "label": "Skill",
-      "children": [
-        {
-          "id": "language",
-          "label": "Language",
-          "leaves": [
-            { "id": "go", "label": "Go", "aliases": ["golang"] },
-            { "id": "typescript", "label": "TypeScript", "aliases": ["ts"] },
-            { "id": "python", "label": "Python" },
-            { "id": "dart", "label": "Dart" }
-          ]
-        },
-        {
-          "id": "framework",
-          "label": "Framework",
-          "leaves": [
-            { "id": "flutter", "label": "Flutter" },
-            { "id": "nextjs", "label": "Next.js", "aliases": ["next"] },
-            { "id": "astro", "label": "Astro" }
-          ]
-        },
-        {
-          "id": "infra",
-          "label": "Infra",
-          "leaves": [
-            { "id": "gcp", "label": "Google Cloud" },
-            { "id": "docker", "label": "Docker" }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "category",
+      "id": "domain",
       "label": "Domain",
       "children": [
         {
-          "id": "domain",
-          "label": "Domain",
+          "id": "creative",
+          "label": "Creative",
           "leaves": [
-            { "id": "adtech", "label": "Adtech" },
-            { "id": "ai", "label": "AI / LLM" },
+            { "id": "design", "label": "Design" },
+            { "id": "animation", "label": "Animation" }
+          ]
+        },
+        {
+          "id": "product",
+          "label": "Product",
+          "leaves": [
+            { "id": "web", "label": "Web App" },
+            { "id": "mobile", "label": "Mobile" },
+            { "id": "desktop", "label": "Desktop" }
+          ]
+        },
+        {
+          "id": "engineering",
+          "label": "Engineering",
+          "leaves": [
             { "id": "tool", "label": "Dev Tool" },
-            { "id": "design", "label": "Design" }
+            { "id": "ai", "label": "AI / LLM" },
+            { "id": "backend", "label": "Backend" }
           ]
         }
       ]
     }
   ],
+  "topicTags": {
+    "design":               ["design"],
+    "design-study":         ["design"],
+    "web-design":           ["design"],
+    "animation":            ["animation"],
+    "css-animation":        ["animation"],
+    "css-3d":               ["animation"],
+    "web-app":              ["web"],
+    "frontend":             ["web"],
+    "spa":                  ["web"],
+    "static-site":          ["web"],
+    "landing-page":         ["web"],
+    "ssg":                  ["web"],
+    "visualization":        ["web"],
+    "flutter":              ["mobile"],
+    "mobile-app":           ["mobile"],
+    "dart":                 ["mobile"],
+    "android":              ["mobile"],
+    "ios":                  ["mobile"],
+    "desktop-app":          ["desktop"],
+    "tauri":                ["desktop"],
+    "wails":                ["desktop"],
+    "electron-alternative": ["desktop"],
+    "developer-tool":       ["tool"],
+    "cli":                  ["tool"],
+    "automation":           ["tool"],
+    "utility":              ["tool"],
+    "bot":                  ["tool"],
+    "script":               ["tool"],
+    "ai":                   ["ai"],
+    "llm":                  ["ai"],
+    "generative-ai":        ["ai"],
+    "claude-code":          ["ai"],
+    "claude-skill":         ["ai"],
+    "gpt":                  ["ai"],
+    "full-stack":           ["backend"],
+    "backend":              ["backend"],
+    "database":             ["backend"],
+    "devops":               ["backend"],
+    "docker":               ["backend"],
+    "api":                  ["backend"],
+    "microservice":         ["backend"],
+    "rest":                 ["backend"]
+  },
   "repoOverrides": {},
   "excludeRepos": [],
   "pinnedRepos": [],
   "namePrefixTags": {
-    "design-": "design"
+    "design-": "design",
+    "animation-": "animation"
   }
 }

@@ -51,7 +51,7 @@ export interface Repo {
   stars: number;
   /** GitHub の primary language。未設定リポジトリでは null。 */
   language: string | null;
-  /** Leaf tag ID の配列（例: `["go", "cli", "tool"]`）。GitHub 言語 + override タグの union。 */
+  /** Leaf tag ID の配列（例: `["design", "tool", "ai"]`）。topicTags・repoOverrides・namePrefixTags の union。 */
   tags: string[];
   /** `card-config.json.pinnedRepos` で指定された場合 true。上位表示の対象。 */
   pinned: boolean;
@@ -121,7 +121,7 @@ export interface CardConfig {
   /**
    * リポジトリ名のプレフィックスから tag を自動付与するルール。
    * 例: `{ "design-": "design" }` で `design-*` の repo に "design" タグを追加。
-   * 既存タグ (language マッピング・repoOverrides) と union される。
+   * 既存タグ (topicTags・repoOverrides) と union される。
    */
   namePrefixTags?: Record<string, string>;
   /**
