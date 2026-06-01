@@ -7,6 +7,10 @@ import type {
 } from "../types/card";
 import type { GitHubRepo } from "./fetchRepos";
 
+/**
+ * mergeConfig の出力。CardData のうち、sunTimes / geo / generatedAt 以外を組み立てる。
+ * 残りのフィールドは caller (`index.astro`) で computeSunTimes と合成する。
+ */
 export interface MergedConfig {
   profile: Profile;
   hierarchy: HierarchyNode[];
