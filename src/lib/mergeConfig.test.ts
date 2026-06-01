@@ -55,24 +55,53 @@ function mkConfig(extra: Partial<CardConfig> = {}): CardConfig {
 }
 
 describe("toRepo", () => {
-  it("maps GitHub language to a leaf id (Go → go)", () => {
-    const r = toRepo(mkRaw("u/a", { language: "Go" }), undefined, false);
-    expect(r.tags).toEqual(["go"]);
-    expect(r.language).toBe("Go");
+  it("maps a known topic to its tag ID via topicTags", () => {
+    const r = toRepo(
+      mkRaw("u/a", { topics: ["cli"] }),
+      undefined,
+      false,
+      undefined,
+      { cli: ["tool"] },
+    );
+    expect(r.tags).toEqual(["tool"]);
   });
 
-  it("returns no tags for an unknown language with no override", () => {
-    const r = toRepo(mkRaw("u/a", { language: "Rust" }), undefined, false);
+  it("returns no tags when topics are empty and no override", () => {
+    const r = toRepo(mkRaw("u/a", { topics: [] }), undefined, false);
     expect(r.tags).toEqual([]);
   });
 
-  it("unions language tag with override tags and deduplicates", () => {
+  it("returns no tags for topics not in topicTags", () => {
     const r = toRepo(
-      mkRaw("u/a", { language: "Go" }),
-      { tags: ["cli", "go"] },
+      mkRaw("u/a", { topics: ["unknown-topic"] }),
+      undefined,
       false,
+      undefined,
+      { cli: ["tool"] },
     );
-    expect(r.tags.sort()).toEqual(["cli", "go"]);
+    expect(r.tags).toEqual([]);
+  });
+
+  it("unions topic tags with override tags and deduplicates", () => {
+    const r = toRepo(
+      mkRaw("u/a", { topics: ["cli"] }),
+      { tags: ["tool", "ai"] },
+      false,
+      undefined,
+      { cli: ["tool"] },
+    );
+    expect(r.tags.sort()).toEqual(["ai", "tool"]);
+  });
+
+  it("one topic can map to multiple tag IDs", () => {
+    const r = toRepo(
+      mkRaw("u/a", { topics: ["full-stack"] }),
+      undefined,
+      false,
+      undefined,
+      { "full-stack": ["web", "backend"] },
+    );
+    expect(r.tags.sort()).toEqual(["backend", "web"]);
   });
 
   it("applies name and description overrides", () => {
@@ -138,33 +167,35 @@ describe("mergeConfig", () => {
     expect(out.repos).toEqual([]);
   });
 
-  it("applies overrides and language mapping during conversion", () => {
+  it("applies topicTags and overrides during conversion", () => {
     const config = mkConfig({
       repoOverrides: {
-        "u/a": { name: "上書き", tags: ["cli"] },
+        "u/a": { name: "上書き", tags: ["ai"] },
       },
+      topicTags: { cli: ["tool"] },
     });
-    const out = mergeConfig([mkRaw("u/a", { language: "Go" })], config);
+    const out = mergeConfig([mkRaw("u/a", { topics: ["cli"] })], config);
     expect(out.repos[0].name).toBe("上書き");
-    expect(out.repos[0].tags.sort()).toEqual(["cli", "go"]);
+    expect(out.repos[0].tags.sort()).toEqual(["ai", "tool"]);
   });
 
   it("applies namePrefixTags rules across all repos", () => {
     const config = mkConfig({
       namePrefixTags: { "design-": "design", "tool-": "tool" },
+      topicTags: {},
     });
     const out = mergeConfig(
       [
-        mkRaw("u/design-apparel", { language: "HTML" }),
-        mkRaw("u/tool-cli", { language: "Go" }),
-        mkRaw("u/other-thing", { language: "Go" }),
+        mkRaw("u/design-apparel"),
+        mkRaw("u/tool-cli"),
+        mkRaw("u/other-thing"),
       ],
       config,
     );
     const byId = Object.fromEntries(out.repos.map((r) => [r.id, r]));
     expect(byId["u/design-apparel"].tags).toEqual(["design"]);
-    expect(byId["u/tool-cli"].tags.sort()).toEqual(["go", "tool"]);
-    expect(byId["u/other-thing"].tags).toEqual(["go"]);
+    expect(byId["u/tool-cli"].tags).toEqual(["tool"]);
+    expect(byId["u/other-thing"].tags).toEqual([]);
   });
 
   it("namePrefixTags is unioned with overrides without duplicating", () => {

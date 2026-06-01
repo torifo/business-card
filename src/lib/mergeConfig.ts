@@ -7,10 +7,6 @@ import type {
 } from "../types/card";
 import type { GitHubRepo } from "./fetchRepos";
 
-/**
- * mergeConfig の出力。CardData のうち、sunTimes / geo / generatedAt 以外を組み立てる。
- * 残りのフィールドは caller (`index.astro`) で computeSunTimes と合成する。
- */
 export interface MergedConfig {
   profile: Profile;
   hierarchy: HierarchyNode[];
@@ -18,25 +14,11 @@ export interface MergedConfig {
 }
 
 /**
- * GitHub の primary language を hierarchy 内の leaf id に自動マッピングするテーブル。
- * 表に無い言語は無視される (override で明示的に tags を付与すれば反映可)。
- */
-const LANGUAGE_TO_LEAF: Record<string, string> = {
-  Go: "go",
-  TypeScript: "typescript",
-  Python: "python",
-  Dart: "dart",
-};
-
-/**
- * 生 GitHub データに card-config を適用し、名刺で扱う Repo[] と
- * プロフィール / 階層をまとめた MergedConfig を返す。
- *
- * 適用順 (design.md Merge rules + namePrefixTags 拡張):
+ * 適用順:
  *   1. excludeRepos に含まれる repo を破棄
  *   2. pinnedRepos / stars DESC / pushed_at DESC でソート
  *   3. repoOverrides の name/description/tags を適用
- *   4. GitHub language → leaf id を自動付与
+ *   4. topicTags で GitHub topics → tag ID を自動付与
  *   5. namePrefixTags でリポジトリ名から tag を自動付与
  *   6. 上記すべてのタグを union
  */
@@ -55,6 +37,7 @@ export function mergeConfig(
       config.repoOverrides[raw.full_name],
       pinnedSet.has(raw.full_name),
       config.namePrefixTags,
+      config.topicTags,
     ),
   );
 
@@ -65,21 +48,18 @@ export function mergeConfig(
   };
 }
 
-/**
- * GitHubRepo を Repo に変換。override / language マッピング / namePrefixTags を
- * まとめて適用する。直接エクスポートはしないが、テスト容易性のため公開する。
- */
 export function toRepo(
   raw: GitHubRepo,
   override: RepoOverride | undefined,
   pinned: boolean,
   namePrefixTags?: Record<string, string>,
+  topicTags?: Record<string, string[]>,
 ): Repo {
-  const langTag = raw.language ? LANGUAGE_TO_LEAF[raw.language] : undefined;
+  const topicTagsList = raw.topics.flatMap((t) => topicTags?.[t] ?? []);
   const overrideTags = override?.tags ?? [];
   const prefixTags = matchPrefixTags(raw.name, namePrefixTags);
   const tags = Array.from(
-    new Set([...(langTag ? [langTag] : []), ...overrideTags, ...prefixTags]),
+    new Set([...topicTagsList, ...overrideTags, ...prefixTags]),
   );
 
   return {
