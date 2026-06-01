@@ -124,6 +124,12 @@ export interface CardConfig {
    * 既存タグ (language マッピング・repoOverrides) と union される。
    */
   namePrefixTags?: Record<string, string>;
+  /**
+   * GitHub topic name → tag ID[] のマッピング。
+   * 例: `{ "cli": ["tool"], "flutter": ["mobile"] }`
+   * mergeConfig が各 repo の topics[] に適用してタグを自動付与する。
+   */
+  topicTags?: Record<string, string[]>;
 }
 
 /** card-config.json での GitHub 生データに対する個別上書き。 */

@@ -15,6 +15,7 @@ function mkRaw(full_name: string, extra: Partial<GitHubRepo> = {}): GitHubRepo {
     fork: false,
     archived: false,
     private: false,
+    topics: [],
     ...extra,
   };
 }

@@ -20,6 +20,7 @@ export interface GitHubRepo {
   fork: boolean;
   archived: boolean;
   private: boolean;
+  topics: string[];
 }
 
 export interface FetchReposOptions {
