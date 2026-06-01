@@ -19,32 +19,56 @@
   },
   "hierarchy": [
     {
-      "id": "domain",
-      "label": "Domain",
+      "id": "creative",
+      "label": "Creative",
       "children": [
         {
-          "id": "creative",
-          "label": "Creative",
+          "id": "design-sub",
+          "label": "Design",
           "leaves": [
-            { "id": "design", "label": "Design" },
-            { "id": "animation", "label": "Animation" }
+            { "id": "design", "label": "Design" }
           ]
         },
         {
-          "id": "product",
-          "label": "Product",
+          "id": "animation-sub",
+          "label": "Animation",
+          "leaves": [
+            { "id": "animation", "label": "Animation" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "product",
+      "label": "Product",
+      "children": [
+        {
+          "id": "platform",
+          "label": "Platform",
           "leaves": [
             { "id": "web", "label": "Web App" },
             { "id": "mobile", "label": "Mobile" },
             { "id": "desktop", "label": "Desktop" }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "label": "Engineering",
+      "children": [
         {
-          "id": "engineering",
-          "label": "Engineering",
+          "id": "tools",
+          "label": "Tool",
           "leaves": [
             { "id": "tool", "label": "Dev Tool" },
-            { "id": "ai", "label": "AI / LLM" },
+            { "id": "ai", "label": "AI / LLM" }
+          ]
+        },
+        {
+          "id": "backend-sub",
+          "label": "Backend",
+          "leaves": [
             { "id": "backend", "label": "Backend" }
           ]
         }
