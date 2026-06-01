@@ -52,6 +52,10 @@ export function mergeConfig(
   };
 }
 
+/**
+ * GitHubRepo を Repo に変換。topicTags / repoOverrides / namePrefixTags を
+ * まとめて適用する。テスト容易性のため公開エクスポート。
+ */
 export function toRepo(
   raw: GitHubRepo,
   override: RepoOverride | undefined,

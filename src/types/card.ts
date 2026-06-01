@@ -136,6 +136,6 @@ export interface CardConfig {
 export interface RepoOverride {
   name?: string;
   description?: string;
-  /** Leaf tag ID の配列。GitHub 言語から推定したタグと union される。 */
+  /** Leaf tag ID の配列。topicTags・namePrefixTags から自動付与されたタグと union される。 */
   tags?: string[];
 }
