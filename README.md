@@ -1,5 +1,13 @@
 # Digital Business Card
 
+<!-- tech-stack:start (auto-generated) -->
+<p align="center">
+  <img src="https://img.shields.io/badge/Astro-BC52EE?style=for-the-badge&logo=astro&logoColor=white" alt="Astro">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+</p>
+<!-- tech-stack:end -->
+
 物理カード不要のデジタル名刺サイト。Astro 5 + Tailwind 4 で構築する独立 SSG として、ポートフォリオ (`portorifo.riumu.net`) のデザインシステムと整合させた見た目で動作する。本番: <https://business-card.riumu.net>
 
 QR から相手の興味に合わせた tag で初期出し分けし、対面でも階層ドロップダウンでリアルタイムに作品を絞り込める。ビルド時に GitHub API + 日没/日の出データを取り込み、ランタイムでは外部通信ゼロで動作する。
